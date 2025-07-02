@@ -65,7 +65,7 @@ export default function Categories() {
 
   const addMutation = useMutation({
     mutationFn: (data: CategoryFormData) =>
-      apiRequest("/api/categories", "POST", data),
+      apiRequest("POST", "/api/categories", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
       setIsAddDialogOpen(false);
@@ -86,7 +86,7 @@ export default function Categories() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: CategoryFormData }) =>
-      apiRequest(`/api/categories/${id}`, "PUT", data),
+      apiRequest("PUT", `/api/categories/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
       setIsEditDialogOpen(false);
@@ -107,7 +107,7 @@ export default function Categories() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => apiRequest(`/api/categories/${id}`, "DELETE"),
+    mutationFn: (id: number) => apiRequest("DELETE", `/api/categories/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
       toast({

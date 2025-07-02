@@ -118,6 +118,13 @@ This is a full-stack inventory management system built with React, TypeScript, E
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+- July 02, 2025: Fixed category CRUD operations - added missing PUT and DELETE API endpoints
+- July 02, 2025: Corrected API parameter order in frontend calls (method, url, data)
+- July 02, 2025: Removed SKU field from item creation form as requested
+- July 02, 2025: Added mobile number and warehouse assignment fields to user management
+
 ## Changelog
 
 Changelog:
