@@ -284,8 +284,8 @@ export default function Users() {
                     <FormItem>
                       <FormLabel>Assigned Warehouse</FormLabel>
                       <Select 
-                        onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)} 
-                        defaultValue={field.value?.toString()}
+                        onValueChange={(value) => field.onChange(value === "none" ? undefined : parseInt(value))} 
+                        defaultValue={field.value?.toString() || "none"}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -293,7 +293,7 @@ export default function Users() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">No assignment</SelectItem>
+                          <SelectItem value="none">No assignment</SelectItem>
                           {warehouses.map((warehouse) => (
                             <SelectItem key={warehouse.id} value={warehouse.id.toString()}>
                               {warehouse.name} - {warehouse.location}
