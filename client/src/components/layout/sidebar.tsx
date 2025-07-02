@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   Tags
 } from "lucide-react";
+import itiLogo from "@assets/iti_logo_1751453860420.png";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -35,8 +36,8 @@ export function Sidebar() {
     <div className="w-64 bg-sidebar-background shadow-lg border-r border-sidebar-border fixed h-full z-10">
       <div className="p-6 border-b border-sidebar-border">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-sidebar-primary rounded-lg flex items-center justify-center">
-            <Building2 className="text-sidebar-primary-foreground" size={20} />
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+            <img src={itiLogo} alt="ITI Logo" className="w-10 h-10 object-contain" />
           </div>
           <div>
             <h1 className="text-xl font-semibold text-sidebar-foreground">ITI Inventory</h1>
