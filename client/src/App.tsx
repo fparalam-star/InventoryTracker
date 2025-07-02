@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Building2 } from "lucide-react";
+import itiLogoPath from "@assets/iti_logo_1751453860420.png";
 
 function LoginPage() {
   const { login } = useAuth();
@@ -48,8 +49,12 @@ function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-              <Building2 className="text-primary-foreground" size={24} />
+            <div className="w-16 h-16 flex items-center justify-center">
+              <img 
+                src={itiLogoPath} 
+                alt="ITI Logo" 
+                className="w-full h-full object-contain"
+              />
             </div>
           </div>
           <CardTitle className="text-2xl">ITI Inventory System</CardTitle>
