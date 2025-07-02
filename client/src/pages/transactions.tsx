@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AddItemModal } from "@/components/modals/add-item-modal";
+import { TransactionModal } from "@/components/modals/transaction-modal";
 import { TransferModal } from "@/components/modals/transfer-modal";
 import { 
   ArrowDown, 
@@ -39,7 +39,7 @@ export default function Transactions() {
   const [selectedType, setSelectedType] = useState<string>("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [addItemModalOpen, setAddItemModalOpen] = useState(false);
+  const [transactionModalOpen, setTransactionModalOpen] = useState(false);
   const [transferModalOpen, setTransferModalOpen] = useState(false);
 
   const { data: transactions = [], isLoading } = useQuery<TransactionWithDetails[]>({
@@ -49,7 +49,6 @@ export default function Transactions() {
   // Filter transactions based on search, type, and date range
   const filteredTransactions = transactions.filter(transaction => {
     const matchesSearch = transaction.item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         transaction.item.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          transaction.user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          transaction.user.lastName.toLowerCase().includes(searchQuery.toLowerCase());
     
@@ -126,7 +125,7 @@ export default function Transactions() {
           <p className="text-muted-foreground">Track all inventory movements and transactions</p>
         </div>
         <div className="flex space-x-2">
-          <Button onClick={() => setAddItemModalOpen(true)}>
+          <Button onClick={() => setTransactionModalOpen(true)}>
             <Plus size={16} className="mr-2" />
             Add Transaction
           </Button>
@@ -236,10 +235,7 @@ export default function Transactions() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div>
-                          <div className="font-medium">{transaction.item.name}</div>
-                          <div className="text-sm text-muted-foreground">SKU: {transaction.item.sku}</div>
-                        </div>
+                        <div className="font-medium">{transaction.item.name}</div>
                       </TableCell>
                       <TableCell className="font-medium">
                         {transaction.type === "outgoing" ? "-" : "+"}{transaction.quantity}
@@ -281,9 +277,9 @@ export default function Transactions() {
         </CardContent>
       </Card>
 
-      <AddItemModal 
-        open={addItemModalOpen} 
-        onOpenChange={setAddItemModalOpen} 
+      <TransactionModal 
+        open={transactionModalOpen} 
+        onOpenChange={setTransactionModalOpen} 
       />
       
       <TransferModal 

@@ -30,17 +30,18 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { ArrowDown, ArrowUp, ArrowLeftRight } from "lucide-react";
+import { CategoryItemSelector } from "@/components/forms/category-item-selector";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import type { Category, Warehouse, Supplier, ItemWithDetails } from "@shared/schema";
+import type { Warehouse, Supplier } from "@shared/schema";
 
 const transactionFormSchema = z.object({
   transactionType: z.enum(["incoming", "outgoing", "transfer"]),
   categoryId: z.number().min(1, "Category is required"),
   itemSelectionType: z.enum(["existing", "new"]),
   existingItemId: z.number().optional(),
-  itemName: z.string().optional(),
+  newItemName: z.string().optional(),
   quantity: z.number().min(1, "Quantity must be at least 1"),
   supplierId: z.number().optional(),
   sourceWarehouseId: z.number().optional(),
@@ -53,7 +54,7 @@ const transactionFormSchema = z.object({
   if (data.itemSelectionType === "existing" && !data.existingItemId) {
     return false;
   }
-  if (data.itemSelectionType === "new" && !data.itemName) {
+  if (data.itemSelectionType === "new" && !data.newItemName?.trim()) {
     return false;
   }
   
@@ -78,12 +79,12 @@ const transactionFormSchema = z.object({
   message: "Please fill in all required fields for the selected transaction type",
 });
 
-interface AddItemModalProps {
+interface TransactionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function AddItemModal({ open, onOpenChange }: AddItemModalProps) {
+export function TransactionModal({ open, onOpenChange }: TransactionModalProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -92,8 +93,8 @@ export function AddItemModal({ open, onOpenChange }: AddItemModalProps) {
     resolver: zodResolver(transactionFormSchema),
     defaultValues: {
       transactionType: "incoming",
-      itemName: "",
       categoryId: 0,
+      itemSelectionType: "existing",
       quantity: 1,
       transactionDate: new Date().toISOString().split('T')[0],
       description: "",
@@ -102,22 +103,16 @@ export function AddItemModal({ open, onOpenChange }: AddItemModalProps) {
   });
 
   const transactionType = form.watch("transactionType");
+  const categoryId = form.watch("categoryId");
+  const itemSelectionType = form.watch("itemSelectionType");
 
   // Fetch data for dropdowns
-  const { data: categories = [] } = useQuery<Category[]>({
-    queryKey: ["/api/categories"],
-  });
-
   const { data: warehouses = [] } = useQuery<Warehouse[]>({
     queryKey: ["/api/warehouses"],
   });
 
   const { data: suppliers = [] } = useQuery<Supplier[]>({
     queryKey: ["/api/suppliers"],
-  });
-
-  const { data: items = [] } = useQuery<ItemWithDetails[]>({
-    queryKey: ["/api/items"],
   });
 
   // Create item mutation
@@ -141,39 +136,44 @@ export function AddItemModal({ open, onOpenChange }: AddItemModalProps) {
       queryClient.invalidateQueries({ queryKey: ["/api/transactions"] });
       queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/metrics"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/recent-activities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/low-stock"] });
     },
   });
 
   const onSubmit = async (data: z.infer<typeof transactionFormSchema>) => {
     try {
-      // First create the item
-      const itemData = {
-        name: data.itemName,
-        categoryId: data.categoryId,
-        description: data.description,
-        minStockLevel: data.minStockLevel,
-      };
+      let itemId = data.existingItemId;
 
-      const createdItem = await createItemMutation.mutateAsync(itemData);
+      // Create new item if needed
+      if (data.itemSelectionType === "new" && data.newItemName) {
+        const newItem = await createItemMutation.mutateAsync({
+          name: data.newItemName,
+          categoryId: data.categoryId,
+          description: data.description,
+          minStockLevel: data.minStockLevel,
+        });
+        itemId = newItem.id;
+      }
 
-      // Then create the transaction
+      // Create transaction
       const transactionData = {
         type: data.transactionType,
-        itemId: createdItem.id,
+        itemId: itemId,
         quantity: data.quantity,
-        supplierId: data.supplierId || undefined,
-        sourceWarehouseId: data.sourceWarehouseId || undefined,
-        destinationWarehouseId: data.destinationWarehouseId || undefined,
-        userId: user!.id,
+        supplierId: data.supplierId,
+        sourceWarehouseId: data.sourceWarehouseId,
+        destinationWarehouseId: data.destinationWarehouseId,
         transactionDate: new Date(data.transactionDate),
-        notes: data.description || undefined,
+        notes: data.description,
+        userId: user?.id,
       };
 
       await createTransactionMutation.mutateAsync(transactionData);
 
       toast({
         title: "Success",
-        description: "Item and transaction created successfully",
+        description: "Transaction created successfully",
       });
 
       form.reset();
@@ -181,9 +181,28 @@ export function AddItemModal({ open, onOpenChange }: AddItemModalProps) {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to create item and transaction",
+        description: "Failed to create transaction",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleCategoryChange = (categoryId: number) => {
+    form.setValue("categoryId", categoryId);
+  };
+
+  const handleItemSelectionChange = (selection: {
+    type: "existing" | "new";
+    existingItemId?: number;
+    newItemName?: string;
+  }) => {
+    form.setValue("itemSelectionType", selection.type);
+    if (selection.type === "existing" && selection.existingItemId) {
+      form.setValue("existingItemId", selection.existingItemId);
+      form.setValue("newItemName", undefined);
+    } else if (selection.type === "new" && selection.newItemName) {
+      form.setValue("newItemName", selection.newItemName);
+      form.setValue("existingItemId", undefined);
     }
   };
 
@@ -191,7 +210,7 @@ export function AddItemModal({ open, onOpenChange }: AddItemModalProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Item</DialogTitle>
+          <DialogTitle>Create Transaction</DialogTitle>
         </DialogHeader>
         
         <Form {...form}>
@@ -218,7 +237,7 @@ export function AddItemModal({ open, onOpenChange }: AddItemModalProps) {
                           <ArrowDown className="text-green-600 mb-2" size={24} />
                           <div className="text-center">
                             <div className="font-medium">Incoming</div>
-                            <div className="text-sm text-muted-foreground">From Supplier</div>
+                            <div className="text-xs text-muted-foreground">From supplier</div>
                           </div>
                         </Label>
                       </div>
@@ -232,7 +251,7 @@ export function AddItemModal({ open, onOpenChange }: AddItemModalProps) {
                           <ArrowUp className="text-red-600 mb-2" size={24} />
                           <div className="text-center">
                             <div className="font-medium">Outgoing</div>
-                            <div className="text-sm text-muted-foreground">Internal Use</div>
+                            <div className="text-xs text-muted-foreground">Internal use</div>
                           </div>
                         </Label>
                       </div>
@@ -246,7 +265,7 @@ export function AddItemModal({ open, onOpenChange }: AddItemModalProps) {
                           <ArrowLeftRight className="text-orange-600 mb-2" size={24} />
                           <div className="text-center">
                             <div className="font-medium">Transfer</div>
-                            <div className="text-sm text-muted-foreground">Between Warehouses</div>
+                            <div className="text-xs text-muted-foreground">Between warehouses</div>
                           </div>
                         </Label>
                       </div>
@@ -257,70 +276,36 @@ export function AddItemModal({ open, onOpenChange }: AddItemModalProps) {
               )}
             />
 
-            {/* Basic Item Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="itemName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Item Name *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter item name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-            </div>
+            {/* Category and Item Selection */}
+            <CategoryItemSelector
+              onCategoryChange={handleCategoryChange}
+              onItemSelectionChange={handleItemSelectionChange}
+              selectedCategoryId={categoryId || undefined}
+              selectedItemType={itemSelectionType}
+              selectedExistingItemId={form.watch("existingItemId")}
+              selectedNewItemName={form.watch("newItemName")}
+            />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="categoryId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Category *</FormLabel>
-                    <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id.toString()}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="quantity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Quantity *</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min="1" 
-                        placeholder="Enter quantity" 
-                        {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            {/* Quantity */}
+            <FormField
+              control={form.control}
+              name="quantity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Quantity *</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      min="1" 
+                      placeholder="Enter quantity" 
+                      {...field}
+                      onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* Conditional Fields Based on Transaction Type */}
             {transactionType === "incoming" && (
@@ -474,36 +459,39 @@ export function AddItemModal({ open, onOpenChange }: AddItemModalProps) {
                 )}
               />
               
-              <FormField
-                control={form.control}
-                name="minStockLevel"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Minimum Stock Level</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min="0" 
-                        placeholder="Enter minimum stock level" 
-                        {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {itemSelectionType === "new" && (
+                <FormField
+                  control={form.control}
+                  name="minStockLevel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Minimum Stock Level</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="0" 
+                          placeholder="Enter minimum stock level" 
+                          {...field}
+                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
 
+            {/* Description */}
             <FormField
               control={form.control}
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Notes</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Enter item description" 
+                      placeholder="Additional notes (optional)" 
                       className="resize-none" 
                       {...field} 
                     />
@@ -513,20 +501,16 @@ export function AddItemModal({ open, onOpenChange }: AddItemModalProps) {
               )}
             />
 
-            {/* Form Actions */}
-            <div className="flex items-center justify-end space-x-4 pt-6 border-t">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => onOpenChange(false)}
-              >
+            {/* Submit Button */}
+            <div className="flex justify-end space-x-4">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
               <Button 
                 type="submit" 
                 disabled={createItemMutation.isPending || createTransactionMutation.isPending}
               >
-                {createItemMutation.isPending || createTransactionMutation.isPending ? "Adding..." : "Add Item"}
+                {createItemMutation.isPending || createTransactionMutation.isPending ? "Creating..." : "Create Transaction"}
               </Button>
             </div>
           </form>

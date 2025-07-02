@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { MetricsCard } from "@/components/dashboard/metrics-card";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { LowStockTable } from "@/components/dashboard/low-stock-table";
-import { AddItemModal } from "@/components/modals/add-item-modal";
+import { TransactionModal } from "@/components/modals/transaction-modal";
 import { TransferModal } from "@/components/modals/transfer-modal";
 import { 
   Building2, 
@@ -27,7 +27,7 @@ import type {
 } from "@shared/schema";
 
 export default function Dashboard() {
-  const [addItemModalOpen, setAddItemModalOpen] = useState(false);
+  const [transactionModalOpen, setTransactionModalOpen] = useState(false);
   const [transferModalOpen, setTransferModalOpen] = useState(false);
   const [, setLocation] = useLocation();
 
@@ -146,10 +146,10 @@ export default function Dashboard() {
           <Button 
             variant="outline" 
             className="p-6 h-auto flex-col space-y-2 border-dashed border-2 hover:border-primary hover:bg-primary/5"
-            onClick={() => setAddItemModalOpen(true)}
+            onClick={() => setTransactionModalOpen(true)}
           >
             <Plus className="text-primary" size={24} />
-            <span className="font-medium text-primary">Add New Item</span>
+            <span className="font-medium text-primary">Add Transaction</span>
           </Button>
 
           <Button 
@@ -185,9 +185,9 @@ export default function Dashboard() {
       <LowStockTable lowStockItems={lowStockLoading ? [] : lowStockItems} />
 
       {/* Modals */}
-      <AddItemModal 
-        open={addItemModalOpen} 
-        onOpenChange={setAddItemModalOpen} 
+      <TransactionModal 
+        open={transactionModalOpen} 
+        onOpenChange={setTransactionModalOpen} 
       />
       
       <TransferModal 
