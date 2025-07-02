@@ -9,12 +9,14 @@ import {
   ArrowLeftRight,
   FileBarChart,
   Users,
-  LayoutDashboard
+  LayoutDashboard,
+  Tags
 } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Inventory", href: "/inventory", icon: Boxes },
+  { name: "Categories", href: "/categories", icon: Tags },
   { name: "Warehouses", href: "/warehouses", icon: Building2 },
   { name: "Suppliers", href: "/suppliers", icon: Truck },
   { name: "Transactions", href: "/transactions", icon: ArrowLeftRight },

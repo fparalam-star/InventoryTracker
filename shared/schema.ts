@@ -10,6 +10,8 @@ export const users = pgTable("users", {
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
   email: text("email").notNull().unique(),
+  mobileNumber: text("mobile_number"),
+  assignedWarehouseId: integer("assigned_warehouse_id").references(() => warehouses.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -41,7 +43,6 @@ export const suppliers = pgTable("suppliers", {
 export const items = pgTable("items", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  sku: text("sku").notNull().unique(),
   description: text("description"),
   categoryId: integer("category_id").references(() => categories.id).notNull(),
   imageUrl: text("image_url"),

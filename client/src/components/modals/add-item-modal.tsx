@@ -38,7 +38,6 @@ import type { Category, Warehouse, Supplier } from "@shared/schema";
 const transactionFormSchema = z.object({
   transactionType: z.enum(["incoming", "outgoing", "transfer"]),
   itemName: z.string().min(1, "Item name is required"),
-  sku: z.string().min(1, "SKU is required"),
   categoryId: z.number().min(1, "Category is required"),
   quantity: z.number().min(1, "Quantity must be at least 1"),
   supplierId: z.number().optional(),
@@ -83,7 +82,6 @@ export function AddItemModal({ open, onOpenChange }: AddItemModalProps) {
     defaultValues: {
       transactionType: "incoming",
       itemName: "",
-      sku: "",
       categoryId: 0,
       quantity: 1,
       transactionDate: new Date().toISOString().split('T')[0],
@@ -136,7 +134,6 @@ export function AddItemModal({ open, onOpenChange }: AddItemModalProps) {
       // First create the item
       const itemData = {
         name: data.itemName,
-        sku: data.sku,
         categoryId: data.categoryId,
         description: data.description,
         minStockLevel: data.minStockLevel,
@@ -261,19 +258,6 @@ export function AddItemModal({ open, onOpenChange }: AddItemModalProps) {
                 )}
               />
               
-              <FormField
-                control={form.control}
-                name="sku"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>SKU *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter SKU" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

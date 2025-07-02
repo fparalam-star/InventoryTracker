@@ -110,6 +110,8 @@ export class MemStorage implements IStorage {
       firstName: "Admin",
       lastName: "User",
       email: "admin@iti.com",
+      mobileNumber: null,
+      assignedWarehouseId: null,
       createdAt: new Date(),
     };
     this.users.set(adminUser.id, adminUser);
@@ -123,6 +125,8 @@ export class MemStorage implements IStorage {
       firstName: "Data Entry",
       lastName: "User",
       email: "dataentry@iti.com",
+      mobileNumber: null,
+      assignedWarehouseId: null,
       createdAt: new Date(),
     };
     this.users.set(dataEntryUser.id, dataEntryUser);
@@ -189,6 +193,8 @@ export class MemStorage implements IStorage {
     const user: User = {
       ...insertUser,
       role: insertUser.role || "data_entry",
+      mobileNumber: insertUser.mobileNumber ?? null,
+      assignedWarehouseId: insertUser.assignedWarehouseId ?? null,
       id: this.currentUserId++,
       createdAt: new Date(),
     };

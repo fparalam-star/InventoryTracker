@@ -41,7 +41,7 @@ import { Users as UsersIcon, Plus, Mail, Shield, User } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { insertUserSchema, type User as UserType } from "@shared/schema";
+import { insertUserSchema, type User as UserType, type Warehouse } from "@shared/schema";
 
 const userFormSchema = insertUserSchema;
 
@@ -67,6 +67,10 @@ export default function Users() {
     queryKey: ["/api/users"],
   });
 
+  const { data: warehouses = [] } = useQuery<Warehouse[]>({
+    queryKey: ["/api/warehouses"],
+  });
+
   const form = useForm<z.infer<typeof userFormSchema>>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
@@ -76,6 +80,8 @@ export default function Users() {
       firstName: "",
       lastName: "",
       email: "",
+      mobileNumber: "",
+      assignedWarehouseId: undefined,
     },
   });
 
@@ -233,6 +239,24 @@ export default function Users() {
                 
                 <FormField
                   control={form.control}
+                  name="mobileNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mobile Number</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Enter mobile number" 
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="role"
                   render={({ field }) => (
                     <FormItem>
@@ -246,6 +270,35 @@ export default function Users() {
                         <SelectContent>
                           <SelectItem value="data_entry">Data Entry</SelectItem>
                           <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="assignedWarehouseId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Assigned Warehouse</FormLabel>
+                      <Select 
+                        onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)} 
+                        defaultValue={field.value?.toString()}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select warehouse (optional)" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="">No assignment</SelectItem>
+                          {warehouses.map((warehouse) => (
+                            <SelectItem key={warehouse.id} value={warehouse.id.toString()}>
+                              {warehouse.name} - {warehouse.location}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />

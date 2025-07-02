@@ -9,6 +9,7 @@ import { Topbar } from "@/components/layout/topbar";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import Inventory from "@/pages/inventory";
+import Categories from "@/pages/categories";
 import Warehouses from "@/pages/warehouses";
 import Suppliers from "@/pages/suppliers";
 import Transactions from "@/pages/transactions";
@@ -101,6 +102,7 @@ function AppRouter() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/inventory" component={Inventory} />
+      <Route path="/categories" component={Categories} />
       <Route path="/warehouses" component={Warehouses} />
       <Route path="/suppliers" component={Suppliers} />
       <Route path="/transactions" component={Transactions} />
