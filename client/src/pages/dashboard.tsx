@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { MetricsCard } from "@/components/dashboard/metrics-card";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
@@ -28,6 +29,7 @@ import type {
 export default function Dashboard() {
   const [addItemModalOpen, setAddItemModalOpen] = useState(false);
   const [transferModalOpen, setTransferModalOpen] = useState(false);
+  const [, setLocation] = useLocation();
 
   // Fetch dashboard data
   const { data: metrics, isLoading: metricsLoading } = useQuery<DashboardMetrics>({
@@ -162,6 +164,7 @@ export default function Dashboard() {
           <Button 
             variant="outline" 
             className="p-6 h-auto flex-col space-y-2 border-dashed border-2 hover:border-amber-500 hover:bg-amber-50"
+            onClick={() => setLocation('/reports')}
           >
             <BarChart3 className="text-amber-500" size={24} />
             <span className="font-medium text-amber-500">Generate Report</span>
@@ -170,6 +173,7 @@ export default function Dashboard() {
           <Button 
             variant="outline" 
             className="p-6 h-auto flex-col space-y-2 border-dashed border-2 hover:border-purple-500 hover:bg-purple-50"
+            onClick={() => setLocation('/suppliers')}
           >
             <UserPlus className="text-purple-500" size={24} />
             <span className="font-medium text-purple-500">Add Supplier</span>

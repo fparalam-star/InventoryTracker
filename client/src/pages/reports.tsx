@@ -100,10 +100,9 @@ export default function Reports() {
       case "inventory":
         const inventoryData = getFilteredInventory();
         return {
-          headers: ["Item Name", "SKU", "Category", "Warehouse", "Quantity", "Min Stock"],
+          headers: ["Item Name", "Category", "Warehouse", "Quantity", "Min Stock"],
           rows: inventoryData.map(inv => [
             inv.item.name,
-            inv.item.sku,
             inv.item.category.name,
             inv.warehouse.name,
             inv.quantity.toString(),
@@ -132,10 +131,9 @@ export default function Reports() {
           inv.quantity <= inv.item.minStockLevel
         );
         return {
-          headers: ["Item Name", "SKU", "Warehouse", "Current Stock", "Min Required", "Deficit"],
+          headers: ["Item Name", "Warehouse", "Current Stock", "Min Required", "Deficit"],
           rows: lowStockData.map(inv => [
             inv.item.name,
-            inv.item.sku,
             inv.warehouse.name,
             inv.quantity.toString(),
             inv.item.minStockLevel.toString(),
@@ -150,7 +148,9 @@ export default function Reports() {
 
   const downloadCSV = () => {
     const { headers, rows } = generateCSVData();
-    const csvContent = [
+    // Add BOM (Byte Order Mark) for proper UTF-8 encoding in Excel and other programs
+    const BOM = '\uFEFF';
+    const csvContent = BOM + [
       headers.join(","),
       ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
     ].join("\n");
@@ -187,7 +187,7 @@ export default function Reports() {
                   <TableCell>
                     <div>
                       <div className="font-medium">{inv.item.name}</div>
-                      <div className="text-sm text-muted-foreground">SKU: {inv.item.sku}</div>
+                      
                     </div>
                   </TableCell>
                   <TableCell>{inv.item.category.name}</TableCell>
@@ -235,10 +235,7 @@ export default function Reports() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div>
-                      <div className="font-medium">{trans.item.name}</div>
-                      <div className="text-sm text-muted-foreground">SKU: {trans.item.sku}</div>
-                    </div>
+                    <div className="font-medium">{trans.item.name}</div>
                   </TableCell>
                   <TableCell className="font-medium">{trans.quantity}</TableCell>
                   <TableCell>{trans.user.firstName} {trans.user.lastName}</TableCell>
@@ -275,7 +272,7 @@ export default function Reports() {
                   <TableCell>
                     <div>
                       <div className="font-medium">{inv.item.name}</div>
-                      <div className="text-sm text-muted-foreground">SKU: {inv.item.sku}</div>
+                      
                     </div>
                   </TableCell>
                   <TableCell>{inv.warehouse.name}</TableCell>
