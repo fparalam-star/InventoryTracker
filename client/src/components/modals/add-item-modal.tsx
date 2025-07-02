@@ -146,12 +146,12 @@ export function AddItemModal({ open, onOpenChange }: AddItemModalProps) {
         type: data.transactionType,
         itemId: createdItem.id,
         quantity: data.quantity,
-        supplierId: data.supplierId,
-        sourceWarehouseId: data.sourceWarehouseId,
-        destinationWarehouseId: data.destinationWarehouseId,
+        supplierId: data.supplierId || undefined,
+        sourceWarehouseId: data.sourceWarehouseId || undefined,
+        destinationWarehouseId: data.destinationWarehouseId || undefined,
         userId: user!.id,
         transactionDate: new Date(data.transactionDate),
-        notes: data.description,
+        notes: data.description || undefined,
       };
 
       await createTransactionMutation.mutateAsync(transactionData);

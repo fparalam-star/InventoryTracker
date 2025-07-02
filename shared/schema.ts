@@ -106,6 +106,8 @@ export const insertInventorySchema = createInsertSchema(inventory).omit({
 export const insertTransactionSchema = createInsertSchema(transactions).omit({
   id: true,
   createdAt: true,
+}).extend({
+  transactionDate: z.coerce.date(),
 });
 
 // Types

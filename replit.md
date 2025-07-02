@@ -120,6 +120,7 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- July 02, 2025: Fixed transaction date validation - added z.coerce.date() to handle ISO date strings
 - July 02, 2025: Fixed category CRUD operations - added missing PUT and DELETE API endpoints
 - July 02, 2025: Corrected API parameter order in frontend calls (method, url, data)
 - July 02, 2025: Removed SKU field from item creation form as requested
