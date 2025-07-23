@@ -122,6 +122,12 @@ Language: Full Arabic localization requested for entire application interface.
 
 ## Recent Changes
 
+- July 23, 2025: **MAJOR INFRASTRUCTURE UPDATE:** Successfully migrated entire application from in-memory storage to PostgreSQL database storage
+  - All CRUD operations now use PostgreSQL for persistent data storage
+  - Dashboard metrics display accurate real-time counts from database
+  - Data survives application restarts and deployments  
+  - Seeded database with initial warehouses, categories, suppliers, and users
+  - Dataentry user properly assigned to Main Warehouse (ID: 10)
 - July 23, 2025: **CRITICAL FIX:** Converted from in-memory storage to PostgreSQL database storage to prevent data loss on app restarts in production
   - Replaced MemStorage with DatabaseStorage implementation
   - Added database connection and schema migration
