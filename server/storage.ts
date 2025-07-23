@@ -12,6 +12,8 @@ import {
   type InventoryWithDetails,
   type DashboardMetrics
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, sql, desc, gte, lte } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -551,4 +553,465 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Database Storage Implementation
+export class DatabaseStorage implements IStorage {
+  // User methods
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async getUsers(): Promise<User[]> {
+    return db.select().from(users);
+  }
+
+  // Warehouse methods
+  async getWarehouses(): Promise<Warehouse[]> {
+    return db.select().from(warehouses);
+  }
+
+  async getWarehouse(id: number): Promise<Warehouse | undefined> {
+    const [warehouse] = await db.select().from(warehouses).where(eq(warehouses.id, id));
+    return warehouse || undefined;
+  }
+
+  async createWarehouse(insertWarehouse: InsertWarehouse): Promise<Warehouse> {
+    const [warehouse] = await db
+      .insert(warehouses)
+      .values(insertWarehouse)
+      .returning();
+    return warehouse;
+  }
+
+  async updateWarehouse(id: number, updateData: Partial<InsertWarehouse>): Promise<Warehouse | undefined> {
+    const [warehouse] = await db
+      .update(warehouses)
+      .set(updateData)
+      .where(eq(warehouses.id, id))
+      .returning();
+    return warehouse || undefined;
+  }
+
+  async deleteWarehouse(id: number): Promise<boolean> {
+    const result = await db.delete(warehouses).where(eq(warehouses.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Category methods
+  async getCategories(): Promise<Category[]> {
+    return db.select().from(categories);
+  }
+
+  async getCategory(id: number): Promise<Category | undefined> {
+    const [category] = await db.select().from(categories).where(eq(categories.id, id));
+    return category || undefined;
+  }
+
+  async createCategory(insertCategory: InsertCategory): Promise<Category> {
+    const [category] = await db
+      .insert(categories)
+      .values(insertCategory)
+      .returning();
+    return category;
+  }
+
+  async updateCategory(id: number, updateData: Partial<InsertCategory>): Promise<Category | undefined> {
+    const [category] = await db
+      .update(categories)
+      .set(updateData)
+      .where(eq(categories.id, id))
+      .returning();
+    return category || undefined;
+  }
+
+  async deleteCategory(id: number): Promise<boolean> {
+    const result = await db.delete(categories).where(eq(categories.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Supplier methods
+  async getSuppliers(): Promise<Supplier[]> {
+    return db.select().from(suppliers);
+  }
+
+  async getSupplier(id: number): Promise<Supplier | undefined> {
+    const [supplier] = await db.select().from(suppliers).where(eq(suppliers.id, id));
+    return supplier || undefined;
+  }
+
+  async createSupplier(insertSupplier: InsertSupplier): Promise<Supplier> {
+    const [supplier] = await db
+      .insert(suppliers)
+      .values(insertSupplier)
+      .returning();
+    return supplier;
+  }
+
+  async updateSupplier(id: number, updateData: Partial<InsertSupplier>): Promise<Supplier | undefined> {
+    const [supplier] = await db
+      .update(suppliers)
+      .set(updateData)
+      .where(eq(suppliers.id, id))
+      .returning();
+    return supplier || undefined;
+  }
+
+  async deleteSupplier(id: number): Promise<boolean> {
+    const result = await db.delete(suppliers).where(eq(suppliers.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Item methods
+  async getItems(): Promise<ItemWithDetails[]> {
+    const itemsWithDetails = await db
+      .select({
+        id: items.id,
+        name: items.name,
+        description: items.description,
+        categoryId: items.categoryId,
+        imageUrl: items.imageUrl,
+        minStockLevel: items.minStockLevel,
+        createdAt: items.createdAt,
+        category: {
+          id: categories.id,
+          name: categories.name,
+          description: categories.description,
+          createdAt: categories.createdAt,
+        },
+      })
+      .from(items)
+      .leftJoin(categories, eq(items.categoryId, categories.id));
+
+    // Get inventory data for each item
+    const itemsWithInventory = await Promise.all(
+      itemsWithDetails.map(async (item) => {
+        const inventoryData = await db
+          .select({
+            id: inventory.id,
+            itemId: inventory.itemId,
+            warehouseId: inventory.warehouseId,
+            quantity: inventory.quantity,
+            updatedAt: inventory.updatedAt,
+            warehouse: {
+              id: warehouses.id,
+              name: warehouses.name,
+              location: warehouses.location,
+              description: warehouses.description,
+              createdAt: warehouses.createdAt,
+            },
+          })
+          .from(inventory)
+          .leftJoin(warehouses, eq(inventory.warehouseId, warehouses.id))
+          .where(eq(inventory.itemId, item.id));
+
+        const totalQuantity = inventoryData.reduce((sum, inv) => sum + inv.quantity, 0);
+
+        return {
+          ...item,
+          inventory: inventoryData,
+          totalQuantity,
+        };
+      })
+    );
+
+    return itemsWithInventory;
+  }
+
+  async getItem(id: number): Promise<ItemWithDetails | undefined> {
+    const itemsWithDetails = await this.getItems();
+    return itemsWithDetails.find(item => item.id === id);
+  }
+
+  async createItem(insertItem: InsertItem): Promise<Item> {
+    const [item] = await db
+      .insert(items)
+      .values(insertItem)
+      .returning();
+    return item;
+  }
+
+  async updateItem(id: number, updateData: Partial<InsertItem>): Promise<Item | undefined> {
+    const [item] = await db
+      .update(items)
+      .set(updateData)
+      .where(eq(items.id, id))
+      .returning();
+    return item || undefined;
+  }
+
+  async deleteItem(id: number): Promise<boolean> {
+    const result = await db.delete(items).where(eq(items.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Inventory methods
+  async getInventory(): Promise<InventoryWithDetails[]> {
+    return db
+      .select({
+        id: inventory.id,
+        itemId: inventory.itemId,
+        warehouseId: inventory.warehouseId,
+        quantity: inventory.quantity,
+        updatedAt: inventory.updatedAt,
+        item: {
+          id: items.id,
+          name: items.name,
+          description: items.description,
+          categoryId: items.categoryId,
+          imageUrl: items.imageUrl,
+          minStockLevel: items.minStockLevel,
+          createdAt: items.createdAt,
+          category: {
+            id: categories.id,
+            name: categories.name,
+            description: categories.description,
+            createdAt: categories.createdAt,
+          },
+        },
+        warehouse: {
+          id: warehouses.id,
+          name: warehouses.name,
+          location: warehouses.location,
+          description: warehouses.description,
+          createdAt: warehouses.createdAt,
+        },
+      })
+      .from(inventory)
+      .leftJoin(items, eq(inventory.itemId, items.id))
+      .leftJoin(categories, eq(items.categoryId, categories.id))
+      .leftJoin(warehouses, eq(inventory.warehouseId, warehouses.id));
+  }
+
+  async getInventoryByWarehouse(warehouseId: number): Promise<InventoryWithDetails[]> {
+    const allInventory = await this.getInventory();
+    return allInventory.filter(inv => inv.warehouseId === warehouseId);
+  }
+
+  async getInventoryByItem(itemId: number): Promise<InventoryWithDetails[]> {
+    const allInventory = await this.getInventory();
+    return allInventory.filter(inv => inv.itemId === itemId);
+  }
+
+  async updateInventory(itemId: number, warehouseId: number, quantity: number): Promise<Inventory | undefined> {
+    // Check if inventory record exists
+    const [existing] = await db
+      .select()
+      .from(inventory)
+      .where(and(eq(inventory.itemId, itemId), eq(inventory.warehouseId, warehouseId)));
+
+    if (existing) {
+      // Update existing record
+      const [updated] = await db
+        .update(inventory)
+        .set({ quantity, updatedAt: new Date() })
+        .where(and(eq(inventory.itemId, itemId), eq(inventory.warehouseId, warehouseId)))
+        .returning();
+      return updated || undefined;
+    } else {
+      // Create new record
+      const [created] = await db
+        .insert(inventory)
+        .values({ itemId, warehouseId, quantity })
+        .returning();
+      return created;
+    }
+  }
+
+  async getLowStockItems(): Promise<InventoryWithDetails[]> {
+    const allInventory = await this.getInventory();
+    return allInventory.filter(inv => inv.quantity <= inv.item.minStockLevel);
+  }
+
+  // Transaction methods
+  async getTransactions(): Promise<TransactionWithDetails[]> {
+    return db
+      .select({
+        id: transactions.id,
+        type: transactions.type,
+        itemId: transactions.itemId,
+        quantity: transactions.quantity,
+        sourceWarehouseId: transactions.sourceWarehouseId,
+        destinationWarehouseId: transactions.destinationWarehouseId,
+        supplierId: transactions.supplierId,
+        userId: transactions.userId,
+        notes: transactions.notes,
+        transactionDate: transactions.transactionDate,
+        status: transactions.status,
+        createdAt: transactions.createdAt,
+        item: {
+          id: items.id,
+          name: items.name,
+          description: items.description,
+          categoryId: items.categoryId,
+          imageUrl: items.imageUrl,
+          minStockLevel: items.minStockLevel,
+          createdAt: items.createdAt,
+          category: {
+            id: categories.id,
+            name: categories.name,
+            description: categories.description,
+            createdAt: categories.createdAt,
+          },
+        },
+        user: {
+          id: users.id,
+          username: users.username,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+          role: users.role,
+        },
+        sourceWarehouse: {
+          id: warehouses.id,
+          name: warehouses.name,
+          location: warehouses.location,
+        },
+        destinationWarehouse: {
+          id: warehouses.id,
+          name: warehouses.name,
+          location: warehouses.location,
+        },
+        supplier: {
+          id: suppliers.id,
+          name: suppliers.name,
+          contactPerson: suppliers.contactPerson,
+        },
+      })
+      .from(transactions)
+      .leftJoin(items, eq(transactions.itemId, items.id))
+      .leftJoin(categories, eq(items.categoryId, categories.id))
+      .leftJoin(users, eq(transactions.userId, users.id))
+      .leftJoin(warehouses, eq(transactions.sourceWarehouseId, warehouses.id))
+      .leftJoin(warehouses, eq(transactions.destinationWarehouseId, warehouses.id))
+      .leftJoin(suppliers, eq(transactions.supplierId, suppliers.id))
+      .orderBy(desc(transactions.createdAt));
+  }
+
+  async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
+    // Start a transaction to ensure data consistency
+    const result = await db.transaction(async (tx) => {
+      const [transaction] = await tx
+        .insert(transactions)
+        .values(insertTransaction)
+        .returning();
+
+      // Update inventory based on transaction type
+      if (transaction.type === "incoming" && transaction.destinationWarehouseId) {
+        const [existing] = await tx
+          .select()
+          .from(inventory)
+          .where(and(eq(inventory.itemId, transaction.itemId), eq(inventory.warehouseId, transaction.destinationWarehouseId)));
+
+        if (existing) {
+          await tx
+            .update(inventory)
+            .set({ quantity: existing.quantity + transaction.quantity, updatedAt: new Date() })
+            .where(and(eq(inventory.itemId, transaction.itemId), eq(inventory.warehouseId, transaction.destinationWarehouseId)));
+        } else {
+          await tx
+            .insert(inventory)
+            .values({ itemId: transaction.itemId, warehouseId: transaction.destinationWarehouseId, quantity: transaction.quantity });
+        }
+      } else if (transaction.type === "outgoing" && transaction.sourceWarehouseId) {
+        const [existing] = await tx
+          .select()
+          .from(inventory)
+          .where(and(eq(inventory.itemId, transaction.itemId), eq(inventory.warehouseId, transaction.sourceWarehouseId)));
+
+        if (existing) {
+          await tx
+            .update(inventory)
+            .set({ quantity: Math.max(0, existing.quantity - transaction.quantity), updatedAt: new Date() })
+            .where(and(eq(inventory.itemId, transaction.itemId), eq(inventory.warehouseId, transaction.sourceWarehouseId)));
+        }
+      } else if (transaction.type === "transfer" && transaction.sourceWarehouseId && transaction.destinationWarehouseId) {
+        // Decrease from source
+        const [sourceInventory] = await tx
+          .select()
+          .from(inventory)
+          .where(and(eq(inventory.itemId, transaction.itemId), eq(inventory.warehouseId, transaction.sourceWarehouseId)));
+
+        if (sourceInventory) {
+          await tx
+            .update(inventory)
+            .set({ quantity: Math.max(0, sourceInventory.quantity - transaction.quantity), updatedAt: new Date() })
+            .where(and(eq(inventory.itemId, transaction.itemId), eq(inventory.warehouseId, transaction.sourceWarehouseId)));
+        }
+
+        // Increase to destination
+        const [destInventory] = await tx
+          .select()
+          .from(inventory)
+          .where(and(eq(inventory.itemId, transaction.itemId), eq(inventory.warehouseId, transaction.destinationWarehouseId)));
+
+        if (destInventory) {
+          await tx
+            .update(inventory)
+            .set({ quantity: destInventory.quantity + transaction.quantity, updatedAt: new Date() })
+            .where(and(eq(inventory.itemId, transaction.itemId), eq(inventory.warehouseId, transaction.destinationWarehouseId)));
+        } else {
+          await tx
+            .insert(inventory)
+            .values({ itemId: transaction.itemId, warehouseId: transaction.destinationWarehouseId, quantity: transaction.quantity });
+        }
+      }
+
+      return transaction;
+    });
+
+    return result;
+  }
+
+  async getTransactionsByDateRange(startDate: Date, endDate: Date): Promise<TransactionWithDetails[]> {
+    const allTransactions = await this.getTransactions();
+    return allTransactions.filter(trans => 
+      trans.transactionDate >= startDate && trans.transactionDate <= endDate
+    );
+  }
+
+  async getTodayTransactions(): Promise<TransactionWithDetails[]> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    return this.getTransactionsByDateRange(today, tomorrow);
+  }
+
+  // Dashboard methods
+  async getDashboardMetrics(): Promise<DashboardMetrics> {
+    const [warehousesResult] = await db.select({ count: sql<number>`count(*)` }).from(warehouses);
+    const [categoriesResult] = await db.select({ count: sql<number>`count(*)` }).from(categories);
+    const [itemsResult] = await db.select({ count: sql<number>`count(*)` }).from(items);
+    const [usersResult] = await db.select({ count: sql<number>`count(*)` }).from(users);
+    const [suppliersResult] = await db.select({ count: sql<number>`count(*)` }).from(suppliers);
+    
+    const lowStockItems = await this.getLowStockItems();
+    const todayTransactions = await this.getTodayTransactions();
+
+    return {
+      warehouses: warehousesResult.count,
+      categories: categoriesResult.count,
+      items: itemsResult.count,
+      users: usersResult.count,
+      suppliers: suppliersResult.count,
+      lowStockItems: lowStockItems.length,
+      todayTransactions: todayTransactions.length,
+    };
+  }
+}
+
+export const storage = new DatabaseStorage();

@@ -25,8 +25,9 @@ This is a full-stack inventory management system built with React, TypeScript, E
 ### Database Design
 - **ORM**: Drizzle ORM with TypeScript schema definitions
 - **Migration Strategy**: Drizzle Kit for schema migrations
-- **Connection**: Neon serverless PostgreSQL driver
+- **Connection**: Neon serverless PostgreSQL driver with persistent storage
 - **Schema Location**: Shared schema definitions in `/shared/schema.ts`
+- **Storage**: PostgreSQL database for persistent data storage (replaces in-memory storage)
 
 ## Key Components
 
@@ -121,6 +122,11 @@ Language: Full Arabic localization requested for entire application interface.
 
 ## Recent Changes
 
+- July 23, 2025: **CRITICAL FIX:** Converted from in-memory storage to PostgreSQL database storage to prevent data loss on app restarts in production
+  - Replaced MemStorage with DatabaseStorage implementation
+  - Added database connection and schema migration
+  - Seeded initial users, warehouses, categories, and suppliers
+  - Data now persists permanently across app restarts and deployments
 - July 23, 2025: Removed visible login credentials from login page for improved security (no longer shows admin/admin123 and dataentry/dataentry123 on screen)
 - July 23, 2025: Added comprehensive Items Report showing detailed item information with category associations, stock levels, and warehouse distribution
 - July 23, 2025: Completed comprehensive Arabic translation for all modal sub-forms including transaction creation and transfer forms
