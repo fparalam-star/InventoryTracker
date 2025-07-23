@@ -58,16 +58,16 @@ export default function Suppliers() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/suppliers"] });
       toast({
-        title: "Success",
-        description: "Supplier created successfully",
+        title: "نجح",
+        description: "تم إنشاء المورد بنجاح",
       });
       form.reset();
       setAddModalOpen(false);
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "Failed to create supplier",
+        title: "خطأ",
+        description: "فشل في إنشاء المورد",
         variant: "destructive",
       });
     },
@@ -81,16 +81,16 @@ export default function Suppliers() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/suppliers"] });
       toast({
-        title: "Success",
-        description: "Supplier updated successfully",
+        title: "نجح",
+        description: "تم تحديث المورد بنجاح",
       });
       form.reset();
       setEditingSupplier(null);
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "Failed to update supplier",
+        title: "خطأ",
+        description: "فشل في تحديث المورد",
         variant: "destructive",
       });
     },
@@ -126,7 +126,7 @@ export default function Suppliers() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading suppliers...</p>
+          <p className="mt-2 text-muted-foreground">جاري تحميل الموردين...</p>
         </div>
       </div>
     );
@@ -137,8 +137,8 @@ export default function Suppliers() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Supplier Management</h1>
-          <p className="text-muted-foreground">Manage your suppliers and vendor information</p>
+          <h1 className="text-3xl font-bold">إدارة الموردين</h1>
+          <p className="text-muted-foreground">إدارة الموردين ومعلومات البائعين</p>
         </div>
         <Dialog open={addModalOpen || !!editingSupplier} onOpenChange={(open) => {
           if (!open) resetForm();
@@ -147,13 +147,13 @@ export default function Suppliers() {
           <DialogTrigger asChild>
             <Button>
               <Plus size={16} className="mr-2" />
-              Add Supplier
+              إضافة مورد
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {editingSupplier ? "Edit Supplier" : "Add New Supplier"}
+                {editingSupplier ? "تعديل المورد" : "إضافة مورد جديد"}
               </DialogTitle>
             </DialogHeader>
             
@@ -164,9 +164,9 @@ export default function Suppliers() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Company Name *</FormLabel>
+                      <FormLabel>اسم الشركة *</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter company name" {...field} />
+                        <Input placeholder="أدخل اسم الشركة" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -178,9 +178,9 @@ export default function Suppliers() {
                   name="contactPerson"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Contact Person</FormLabel>
+                      <FormLabel>شخص الاتصال</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter contact person name" {...field} />
+                        <Input placeholder="أدخل اسم شخص الاتصال" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -193,9 +193,9 @@ export default function Suppliers() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel>البريد الإلكتروني</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="Enter email address" {...field} />
+                          <Input type="email" placeholder="أدخل عنوان البريد الإلكتروني" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -207,9 +207,9 @@ export default function Suppliers() {
                     name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Phone</FormLabel>
+                        <FormLabel>الهاتف</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter phone number" {...field} />
+                          <Input type="tel" placeholder="أدخل رقم الهاتف" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -222,10 +222,10 @@ export default function Suppliers() {
                   name="address"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Address</FormLabel>
+                      <FormLabel>العنوان</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Enter company address" 
+                          placeholder="أدخل عنوان الشركة" 
                           className="resize-none" 
                           {...field} 
                         />
@@ -237,15 +237,15 @@ export default function Suppliers() {
 
                 <div className="flex items-center justify-end space-x-4 pt-4">
                   <Button type="button" variant="outline" onClick={resetForm}>
-                    Cancel
+                    إلغاء
                   </Button>
                   <Button 
                     type="submit" 
                     disabled={createSupplierMutation.isPending || updateSupplierMutation.isPending}
                   >
                     {createSupplierMutation.isPending || updateSupplierMutation.isPending 
-                      ? (editingSupplier ? "Updating..." : "Creating...") 
-                      : (editingSupplier ? "Update Supplier" : "Create Supplier")
+                      ? (editingSupplier ? "جاري التحديث..." : "جاري الإنشاء...") 
+                      : (editingSupplier ? "تحديث المورد" : "إنشاء المورد")
                     }
                   </Button>
                 </div>
@@ -260,8 +260,8 @@ export default function Suppliers() {
         {suppliers.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <Truck className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">No suppliers found</p>
-            <p className="text-sm text-muted-foreground">Add your first supplier to get started</p>
+            <p className="text-muted-foreground">لم يتم العثور على موردين</p>
+            <p className="text-sm text-muted-foreground">أضف مورداً أولاً للبدء</p>
           </div>
         ) : (
           suppliers.map((supplier) => (

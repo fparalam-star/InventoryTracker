@@ -297,6 +297,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get pending transfer requests (for notifications)
+  app.get("/api/transactions/pending-transfers", async (req, res) => {
+    try {
+      const transactions = await storage.getTransactions();
+      const pendingTransfers = transactions.filter(
+        transaction => transaction.type === "transfer" && transaction.status === "pending"
+      );
+      res.json(pendingTransfers);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch pending transfers" });
+    }
+  });
+
   app.post("/api/transactions", async (req, res) => {
     try {
       const transactionData = insertTransactionSchema.parse(req.body);

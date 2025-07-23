@@ -56,16 +56,16 @@ export default function Warehouses() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/warehouses"] });
       toast({
-        title: "Success",
-        description: "Warehouse created successfully",
+        title: "نجح",
+        description: "تم إنشاء المستودع بنجاح",
       });
       form.reset();
       setAddModalOpen(false);
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "Failed to create warehouse",
+        title: "خطأ",
+        description: "فشل في إنشاء المستودع",
         variant: "destructive",
       });
     },
@@ -79,16 +79,16 @@ export default function Warehouses() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/warehouses"] });
       toast({
-        title: "Success",
-        description: "Warehouse updated successfully",
+        title: "نجح",
+        description: "تم تحديث المستودع بنجاح",
       });
       form.reset();
       setEditingWarehouse(null);
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "Failed to update warehouse",
+        title: "خطأ",
+        description: "فشل في تحديث المستودع",
         variant: "destructive",
       });
     },
@@ -101,14 +101,14 @@ export default function Warehouses() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/warehouses"] });
       toast({
-        title: "Success",
-        description: "Warehouse deleted successfully",
+        title: "نجح",
+        description: "تم حذف المستودع بنجاح",
       });
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "Failed to delete warehouse",
+        title: "خطأ",
+        description: "فشل في حذف المستودع",
         variant: "destructive",
       });
     },
@@ -132,7 +132,7 @@ export default function Warehouses() {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this warehouse?")) {
+    if (confirm("هل أنت متأكد من أنك تريد حذف هذا المستودع؟")) {
       deleteWarehouseMutation.mutate(id);
     }
   };
@@ -148,7 +148,7 @@ export default function Warehouses() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading warehouses...</p>
+          <p className="mt-2 text-muted-foreground">جاري تحميل المستودعات...</p>
         </div>
       </div>
     );
@@ -159,8 +159,8 @@ export default function Warehouses() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Warehouse Management</h1>
-          <p className="text-muted-foreground">Manage your warehouse locations and details</p>
+          <h1 className="text-3xl font-bold">إدارة المستودعات</h1>
+          <p className="text-muted-foreground">إدارة مواقع وتفاصيل المستودعات الخاصة بك</p>
         </div>
         <Dialog open={addModalOpen || !!editingWarehouse} onOpenChange={(open) => {
           if (!open) resetForm();
@@ -169,13 +169,13 @@ export default function Warehouses() {
           <DialogTrigger asChild>
             <Button>
               <Plus size={16} className="mr-2" />
-              Add Warehouse
+              إضافة مستودع
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {editingWarehouse ? "Edit Warehouse" : "Add New Warehouse"}
+                {editingWarehouse ? "تعديل المستودع" : "إضافة مستودع جديد"}
               </DialogTitle>
             </DialogHeader>
             
@@ -186,9 +186,9 @@ export default function Warehouses() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Warehouse Name *</FormLabel>
+                      <FormLabel>اسم المستودع *</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter warehouse name" {...field} />
+                        <Input placeholder="أدخل اسم المستودع" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -200,9 +200,9 @@ export default function Warehouses() {
                   name="location"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Location *</FormLabel>
+                      <FormLabel>الموقع *</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter warehouse location" {...field} />
+                        <Input placeholder="أدخل موقع المستودع" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -214,10 +214,10 @@ export default function Warehouses() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel>الوصف</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Enter warehouse description" 
+                          placeholder="أدخل وصف المستودع" 
                           className="resize-none" 
                           {...field} 
                           value={field.value || ""}
@@ -230,15 +230,15 @@ export default function Warehouses() {
 
                 <div className="flex items-center justify-end space-x-4 pt-4">
                   <Button type="button" variant="outline" onClick={resetForm}>
-                    Cancel
+                    إلغاء
                   </Button>
                   <Button 
                     type="submit" 
                     disabled={createWarehouseMutation.isPending || updateWarehouseMutation.isPending}
                   >
                     {createWarehouseMutation.isPending || updateWarehouseMutation.isPending 
-                      ? (editingWarehouse ? "Updating..." : "Creating...") 
-                      : (editingWarehouse ? "Update Warehouse" : "Create Warehouse")
+                      ? (editingWarehouse ? "جاري التحديث..." : "جاري الإنشاء...") 
+                      : (editingWarehouse ? "تحديث المستودع" : "إنشاء المستودع")
                     }
                   </Button>
                 </div>
@@ -253,8 +253,8 @@ export default function Warehouses() {
         {warehouses.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <Building2 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">No warehouses found</p>
-            <p className="text-sm text-muted-foreground">Create your first warehouse to get started</p>
+            <p className="text-muted-foreground">لم يتم العثور على مستودعات</p>
+            <p className="text-sm text-muted-foreground">أنشئ مستودعك الأول للبدء</p>
           </div>
         ) : (
           warehouses.map((warehouse) => (
@@ -299,7 +299,7 @@ export default function Warehouses() {
                   </p>
                 )}
                 <div className="text-xs text-muted-foreground">
-                  Created: {new Date(warehouse.createdAt).toLocaleDateString()}
+                  تاريخ الإنشاء: {new Date(warehouse.createdAt).toLocaleDateString()}
                 </div>
               </CardContent>
             </Card>

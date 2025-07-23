@@ -69,6 +69,7 @@ export const transactions = pgTable("transactions", {
   userId: integer("user_id").references(() => users.id).notNull(),
   notes: text("notes"),
   transactionDate: timestamp("transaction_date").notNull(),
+  status: text("status", { enum: ["pending", "approved", "rejected"] }).default("approved").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

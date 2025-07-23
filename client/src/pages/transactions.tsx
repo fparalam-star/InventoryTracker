@@ -91,11 +91,11 @@ export default function Transactions() {
   const getTransactionBadge = (type: string) => {
     switch (type) {
       case "incoming":
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Incoming</Badge>;
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">وارد</Badge>;
       case "outgoing":
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Outgoing</Badge>;
+        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">صادر</Badge>;
       case "transfer":
-        return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">Transfer</Badge>;
+        return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">نقل</Badge>;
       default:
         return <Badge variant="secondary">{type}</Badge>;
     }
@@ -104,13 +104,13 @@ export default function Transactions() {
   const getTransactionDescription = (transaction: TransactionWithDetails) => {
     switch (transaction.type) {
       case "incoming":
-        return `From ${transaction.supplier?.name || "Unknown Supplier"} to ${transaction.destinationWarehouse?.name}`;
+        return `من ${transaction.supplier?.name || "مورد غير معروف"} إلى ${transaction.destinationWarehouse?.name}`;
       case "outgoing":
-        return `From ${transaction.sourceWarehouse?.name} for internal use`;
+        return `من ${transaction.sourceWarehouse?.name} للاستخدام الداخلي`;
       case "transfer":
-        return `From ${transaction.sourceWarehouse?.name} to ${transaction.destinationWarehouse?.name}`;
+        return `من ${transaction.sourceWarehouse?.name} إلى ${transaction.destinationWarehouse?.name}`;
       default:
-        return "Unknown transaction";
+        return "معاملة غير معروفة";
     }
   };
 
@@ -119,7 +119,7 @@ export default function Transactions() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading transactions...</p>
+          <p className="mt-2 text-muted-foreground">جاري تحميل المعاملات...</p>
         </div>
       </div>
     );
@@ -130,17 +130,17 @@ export default function Transactions() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Transaction History</h1>
-          <p className="text-muted-foreground">Track all inventory movements and transactions</p>
+          <h1 className="text-3xl font-bold">تاريخ المعاملات</h1>
+          <p className="text-muted-foreground">تتبع جميع حركات المخزون والمعاملات</p>
         </div>
         <div className="flex space-x-2">
           <Button onClick={() => setTransactionModalOpen(true)}>
             <Plus size={16} className="mr-2" />
-            Add Transaction
+            إضافة معاملة
           </Button>
           <Button variant="outline" onClick={() => setTransferModalOpen(true)}>
             <ArrowLeftRight size={16} className="mr-2" />
-            Transfer Items
+            نقل العناصر
           </Button>
         </div>
       </div>
@@ -150,7 +150,7 @@ export default function Transactions() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Filter size={20} />
-            Filters
+            المرشحات
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -158,7 +158,7 @@ export default function Transactions() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
               <Input
-                placeholder="Search transactions..."
+                placeholder="البحث في المعاملات..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -167,13 +167,13 @@ export default function Transactions() {
             
             <Select value={selectedType} onValueChange={setSelectedType}>
               <SelectTrigger>
-                <SelectValue placeholder="Transaction type" />
+                <SelectValue placeholder="نوع المعاملة" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="incoming">Incoming</SelectItem>
-                <SelectItem value="outgoing">Outgoing</SelectItem>
-                <SelectItem value="transfer">Transfer</SelectItem>
+                <SelectItem value="all">جميع الأنواع</SelectItem>
+                <SelectItem value="incoming">وارد</SelectItem>
+                <SelectItem value="outgoing">صادر</SelectItem>
+                <SelectItem value="transfer">نقل</SelectItem>
               </SelectContent>
             </Select>
             
@@ -181,7 +181,7 @@ export default function Transactions() {
               <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
               <Input
                 type="date"
-                placeholder="Start date"
+                placeholder="تاريخ البداية"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 className="pl-10"
@@ -192,7 +192,7 @@ export default function Transactions() {
               <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
               <Input
                 type="date"
-                placeholder="End date"
+                placeholder="تاريخ النهاية"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 className="pl-10"
@@ -205,7 +205,7 @@ export default function Transactions() {
       {/* Transactions Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Transactions ({filteredTransactions.length})</CardTitle>
+          <CardTitle>المعاملات ({filteredTransactions.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {filteredTransactions.length === 0 ? (
@@ -213,8 +213,8 @@ export default function Transactions() {
               <ArrowLeftRight className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-muted-foreground">
                 {searchQuery || selectedType !== "all" || startDate || endDate
-                  ? "No transactions match your search criteria" 
-                  : "No transactions found"
+                  ? "لا توجد معاملات تطابق معايير البحث" 
+                  : "لم يتم العثور على معاملات"
                 }
               </p>
             </div>
@@ -223,13 +223,13 @@ export default function Transactions() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Item</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Details</TableHead>
-                    <TableHead>User</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Notes</TableHead>
+                    <TableHead>النوع</TableHead>
+                    <TableHead>العنصر</TableHead>
+                    <TableHead>الكمية</TableHead>
+                    <TableHead>التفاصيل</TableHead>
+                    <TableHead>المستخدم</TableHead>
+                    <TableHead>التاريخ</TableHead>
+                    <TableHead>الملاحظات</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
