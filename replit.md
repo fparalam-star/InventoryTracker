@@ -121,6 +121,18 @@ Language: Full Arabic localization requested for entire application interface.
 
 ## Recent Changes
 
+- July 23, 2025: Implemented warehouse-specific data filtering for data entry users in reports and transactions
+  - Data entry users only see data from their assigned warehouse in reports and transaction history
+  - Admin users continue to see all data across all warehouses
+  - Warehouse selector in reports page hidden for data entry users as they only see their assigned warehouse data
+- July 23, 2025: Added clickable hyperlinks to dashboard metric cards for navigation
+  - Warehouses card navigates to /warehouses page
+  - Categories card navigates to /categories page
+  - Items card navigates to /transactions page
+  - Users card navigates to /users page
+  - Suppliers card navigates to /suppliers page
+  - Low stock items card navigates to /reports page
+  - Today's transactions card navigates to /transactions page
 - July 23, 2025: Implemented role-based access control restricting dashboard and categories pages to admin users only
   - Data entry users can only access warehouses, suppliers, transactions, and reports
   - Admin users have access to all features including dashboard, categories, and user management

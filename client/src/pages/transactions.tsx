@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,7 @@ import { formatDistanceToNow } from "date-fns";
 import type { TransactionWithDetails } from "@shared/schema";
 
 export default function Transactions() {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<string>("all");
   const [startDate, setStartDate] = useState("");
@@ -46,7 +48,7 @@ export default function Transactions() {
     queryKey: ["/api/transactions"],
   });
 
-  // Filter transactions based on search, type, and date range
+  // Filter transactions based on search, type, date range, and user role
   const filteredTransactions = transactions.filter(transaction => {
     const matchesSearch = transaction.item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          transaction.user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -63,7 +65,14 @@ export default function Transactions() {
       matchesDateRange = transactionDate >= start && transactionDate <= end;
     }
     
-    return matchesSearch && matchesType && matchesDateRange;
+    // For data entry users, only show transactions from their assigned warehouse
+    let matchesWarehouse = true;
+    if (user?.role === "data_entry" && user?.warehouseId) {
+      matchesWarehouse = transaction.sourceWarehouseId === user.warehouseId || 
+                        transaction.destinationWarehouseId === user.warehouseId;
+    }
+    
+    return matchesSearch && matchesType && matchesDateRange && matchesWarehouse;
   });
 
   const getTransactionIcon = (type: string) => {

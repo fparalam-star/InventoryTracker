@@ -27,9 +27,9 @@ import type {
 } from "@shared/schema";
 
 export default function Dashboard() {
+  const [, setLocation] = useLocation();
   const [transactionModalOpen, setTransactionModalOpen] = useState(false);
   const [transferModalOpen, setTransferModalOpen] = useState(false);
-  const [, setLocation] = useLocation();
 
   // Fetch dashboard data
   const { data: metrics, isLoading: metricsLoading } = useQuery<DashboardMetrics>({
@@ -59,57 +59,92 @@ export default function Dashboard() {
     <div className="space-y-8">
       {/* Dashboard Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricsCard
-          title="إجمالي المستودعات"
-          value={metrics?.warehouses || 0}
-          icon={<Building2 className="text-blue-600" size={24} />}
-          iconBgColor="bg-blue-100"
-        />
+        <div 
+          onClick={() => setLocation("/warehouses")}
+          className="cursor-pointer transition-transform hover:scale-105"
+        >
+          <MetricsCard
+            title="إجمالي المستودعات"
+            value={metrics?.warehouses || 0}
+            icon={<Building2 className="text-blue-600" size={24} />}
+            iconBgColor="bg-blue-100"
+          />
+        </div>
         
-        <MetricsCard
-          title="إجمالي الفئات"
-          value={metrics?.categories || 0}
-          icon={<Tags className="text-green-600" size={24} />}
-          iconBgColor="bg-green-100"
-        />
+        <div 
+          onClick={() => setLocation("/categories")}
+          className="cursor-pointer transition-transform hover:scale-105"
+        >
+          <MetricsCard
+            title="إجمالي الفئات"
+            value={metrics?.categories || 0}
+            icon={<Tags className="text-green-600" size={24} />}
+            iconBgColor="bg-green-100"
+          />
+        </div>
         
-        <MetricsCard
-          title="إجمالي العناصر"
-          value={metrics?.items || 0}
-          icon={<Package className="text-orange-600" size={24} />}
-          iconBgColor="bg-orange-100"
-        />
+        <div 
+          onClick={() => setLocation("/transactions")}
+          className="cursor-pointer transition-transform hover:scale-105"
+        >
+          <MetricsCard
+            title="إجمالي العناصر"
+            value={metrics?.items || 0}
+            icon={<Package className="text-orange-600" size={24} />}
+            iconBgColor="bg-orange-100"
+          />
+        </div>
         
-        <MetricsCard
-          title="إجمالي المستخدمين"
-          value={metrics?.users || 0}
-          icon={<Users className="text-purple-600" size={24} />}
-          iconBgColor="bg-purple-100"
-        />
+        <div 
+          onClick={() => setLocation("/users")}
+          className="cursor-pointer transition-transform hover:scale-105"
+        >
+          <MetricsCard
+            title="إجمالي المستخدمين"
+            value={metrics?.users || 0}
+            icon={<Users className="text-purple-600" size={24} />}
+            iconBgColor="bg-purple-100"
+          />
+        </div>
       </div>
 
       {/* Additional Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <MetricsCard
-          title="إجمالي الموردين"
-          value={metrics?.suppliers || 0}
-          icon={<Truck className="text-indigo-600" size={20} />}
-          iconBgColor="bg-indigo-100"
-        />
+        <div 
+          onClick={() => setLocation("/suppliers")}
+          className="cursor-pointer transition-transform hover:scale-105"
+        >
+          <MetricsCard
+            title="إجمالي الموردين"
+            value={metrics?.suppliers || 0}
+            icon={<Truck className="text-indigo-600" size={20} />}
+            iconBgColor="bg-indigo-100"
+          />
+        </div>
         
-        <MetricsCard
-          title="العناصر منخفضة المخزون"
-          value={metrics?.lowStockItems || 0}
-          icon={<AlertTriangle className="text-red-600" size={20} />}
-          iconBgColor="bg-red-100"
-        />
+        <div 
+          onClick={() => setLocation("/reports")}
+          className="cursor-pointer transition-transform hover:scale-105"
+        >
+          <MetricsCard
+            title="العناصر منخفضة المخزون"
+            value={metrics?.lowStockItems || 0}
+            icon={<AlertTriangle className="text-red-600" size={20} />}
+            iconBgColor="bg-red-100"
+          />
+        </div>
         
-        <MetricsCard
-          title="معاملات اليوم"
-          value={metrics?.todayTransactions || 0}
-          icon={<ArrowLeftRight className="text-teal-600" size={20} />}
-          iconBgColor="bg-teal-100"
-        />
+        <div 
+          onClick={() => setLocation("/transactions")}
+          className="cursor-pointer transition-transform hover:scale-105"
+        >
+          <MetricsCard
+            title="معاملات اليوم"
+            value={metrics?.todayTransactions || 0}
+            icon={<ArrowLeftRight className="text-teal-600" size={20} />}
+            iconBgColor="bg-teal-100"
+          />
+        </div>
       </div>
 
       {/* Charts and Recent Activity */}

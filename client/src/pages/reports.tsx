@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -38,6 +39,7 @@ import type {
 } from "@shared/schema";
 
 export default function Reports() {
+  const { user } = useAuth();
   const [reportType, setReportType] = useState("inventory");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -60,7 +62,7 @@ export default function Reports() {
     queryKey: ["/api/warehouses"],
   });
 
-  // Filter data based on selected filters
+  // Filter data based on selected filters and user role
   const getFilteredTransactions = () => {
     return transactions.filter(transaction => {
       let matchesDateRange = true;
@@ -73,7 +75,12 @@ export default function Reports() {
       }
       
       let matchesWarehouse = true;
-      if (selectedWarehouse !== "all") {
+      
+      // For data entry users, only show transactions from their assigned warehouse
+      if (user?.role === "data_entry" && user?.warehouseId) {
+        matchesWarehouse = transaction.sourceWarehouseId === user.warehouseId || 
+                          transaction.destinationWarehouseId === user.warehouseId;
+      } else if (selectedWarehouse !== "all") {
         const warehouseId = parseInt(selectedWarehouse);
         matchesWarehouse = transaction.sourceWarehouseId === warehouseId || 
                           transaction.destinationWarehouseId === warehouseId;
@@ -84,11 +91,23 @@ export default function Reports() {
   };
 
   const getFilteredInventory = () => {
+    // For data entry users, only show inventory from their assigned warehouse
+    if (user?.role === "data_entry" && user?.warehouseId) {
+      return inventory.filter(inv => inv.warehouseId === user.warehouseId);
+    }
+    
     if (selectedWarehouse === "all") return inventory;
     return inventory.filter(inv => inv.warehouseId === parseInt(selectedWarehouse));
   };
 
   const getFilteredItems = () => {
+    // For data entry users, only show items from their assigned warehouse
+    if (user?.role === "data_entry" && user?.warehouseId) {
+      return items.filter(item => 
+        item.inventory.some(inv => inv.warehouseId === user.warehouseId)
+      );
+    }
+    
     if (selectedWarehouse === "all") return items;
     return items.filter(item => 
       item.inventory.some(inv => inv.warehouseId === parseInt(selectedWarehouse))
@@ -100,7 +119,7 @@ export default function Reports() {
       case "inventory":
         const inventoryData = getFilteredInventory();
         return {
-          headers: ["Item Name", "Category", "Warehouse", "Quantity", "Min Stock"],
+          headers: ["اسم العنصر", "الفئة", "المستودع", "الكمية", "الحد الأدنى"],
           rows: inventoryData.map(inv => [
             inv.item.name,
             inv.item.category.name,
@@ -113,7 +132,7 @@ export default function Reports() {
       case "transactions":
         const transactionData = getFilteredTransactions();
         return {
-          headers: ["Date", "Type", "Item", "Quantity", "User", "Source", "Destination", "Notes"],
+          headers: ["التاريخ", "النوع", "العنصر", "الكمية", "المستخدم", "المصدر", "الوجهة", "الملاحظات"],
           rows: transactionData.map(trans => [
             new Date(trans.transactionDate).toLocaleDateString(),
             trans.type,
@@ -131,7 +150,7 @@ export default function Reports() {
           inv.quantity <= inv.item.minStockLevel
         );
         return {
-          headers: ["Item Name", "Warehouse", "Current Stock", "Min Required", "Deficit"],
+          headers: ["اسم العنصر", "المستودع", "المخزون الحالي", "الحد الأدنى", "النقص"],
           rows: lowStockData.map(inv => [
             inv.item.name,
             inv.warehouse.name,
@@ -174,11 +193,11 @@ export default function Reports() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Item</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Warehouse</TableHead>
-                <TableHead>Stock</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>العنصر</TableHead>
+                <TableHead>الفئة</TableHead>
+                <TableHead>المستودع</TableHead>
+                <TableHead>المخزون</TableHead>
+                <TableHead>الحالة</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -195,9 +214,9 @@ export default function Reports() {
                   <TableCell className="font-medium">{inv.quantity}</TableCell>
                   <TableCell>
                     {inv.quantity <= inv.item.minStockLevel ? (
-                      <Badge variant="destructive">Low Stock</Badge>
+                      <Badge variant="destructive">مخزون منخفض</Badge>
                     ) : (
-                      <Badge variant="default">In Stock</Badge>
+                      <Badge variant="default">متوفر</Badge>
                     )}
                   </TableCell>
                 </TableRow>
@@ -212,12 +231,12 @@ export default function Reports() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Item</TableHead>
-                <TableHead>Quantity</TableHead>
-                <TableHead>User</TableHead>
-                <TableHead>Details</TableHead>
+                <TableHead>التاريخ</TableHead>
+                <TableHead>النوع</TableHead>
+                <TableHead>العنصر</TableHead>
+                <TableHead>الكمية</TableHead>
+                <TableHead>المستخدم</TableHead>
+                <TableHead>التفاصيل</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -231,7 +250,9 @@ export default function Reports() {
                       {trans.type === "incoming" && <ArrowDown className="text-green-600" size={16} />}
                       {trans.type === "outgoing" && <ArrowUp className="text-red-600" size={16} />}
                       {trans.type === "transfer" && <ArrowLeftRight className="text-orange-600" size={16} />}
-                      <span className="capitalize">{trans.type}</span>
+                      <span className="capitalize">
+                        {trans.type === "incoming" ? "وارد" : trans.type === "outgoing" ? "صادر" : "تحويل"}
+                      </span>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -258,12 +279,12 @@ export default function Reports() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Item</TableHead>
-                <TableHead>Warehouse</TableHead>
-                <TableHead>Current Stock</TableHead>
-                <TableHead>Min Required</TableHead>
-                <TableHead>Deficit</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>العنصر</TableHead>
+                <TableHead>المستودع</TableHead>
+                <TableHead>المخزون الحالي</TableHead>
+                <TableHead>الحد الأدنى</TableHead>
+                <TableHead>النقص</TableHead>
+                <TableHead>الحالة</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -283,7 +304,7 @@ export default function Reports() {
                   </TableCell>
                   <TableCell>
                     <Badge variant={inv.quantity === 0 ? "destructive" : "secondary"}>
-                      {inv.quantity === 0 ? "Out of Stock" : "Low Stock"}
+                      {inv.quantity === 0 ? "نفد المخزون" : "مخزون منخفض"}
                     </Badge>
                   </TableCell>
                 </TableRow>
@@ -293,7 +314,7 @@ export default function Reports() {
         );
 
       default:
-        return <div>Select a report type</div>;
+        return <div>اختر نوع التقرير</div>;
     }
   };
 
@@ -302,51 +323,53 @@ export default function Reports() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Reports & Analytics</h1>
-          <p className="text-muted-foreground">Generate and export inventory reports</p>
+          <h1 className="text-3xl font-bold">التقارير والتحليلات</h1>
+          <p className="text-muted-foreground">إنشاء وتصدير تقارير المخزون</p>
         </div>
       </div>
 
       {/* Report Configuration */}
       <Card>
         <CardHeader>
-          <CardTitle>Report Configuration</CardTitle>
+          <CardTitle>إعداد التقرير</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className={`grid grid-cols-1 md:grid-cols-2 ${user?.role === "admin" ? "lg:grid-cols-5" : "lg:grid-cols-4"} gap-4`}>
             <div>
-              <Label htmlFor="reportType">Report Type</Label>
+              <Label htmlFor="reportType">نوع التقرير</Label>
               <Select value={reportType} onValueChange={setReportType}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="inventory">Inventory Report</SelectItem>
-                  <SelectItem value="transactions">Transaction History</SelectItem>
-                  <SelectItem value="lowstock">Low Stock Report</SelectItem>
+                  <SelectItem value="inventory">تقرير المخزون</SelectItem>
+                  <SelectItem value="transactions">تاريخ المعاملات</SelectItem>
+                  <SelectItem value="lowstock">تقرير المخزون المنخفض</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div>
-              <Label htmlFor="warehouse">Warehouse</Label>
-              <Select value={selectedWarehouse} onValueChange={setSelectedWarehouse}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Warehouses</SelectItem>
-                  {warehouses.map((warehouse) => (
-                    <SelectItem key={warehouse.id} value={warehouse.id.toString()}>
-                      {warehouse.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {user?.role === "admin" && (
+              <div>
+                <Label htmlFor="warehouse">المستودع</Label>
+                <Select value={selectedWarehouse} onValueChange={setSelectedWarehouse}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">جميع المستودعات</SelectItem>
+                    {warehouses.map((warehouse) => (
+                      <SelectItem key={warehouse.id} value={warehouse.id.toString()}>
+                        {warehouse.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div>
-              <Label htmlFor="startDate">Start Date</Label>
+              <Label htmlFor="startDate">تاريخ البداية</Label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
                 <Input
@@ -360,7 +383,7 @@ export default function Reports() {
             </div>
 
             <div>
-              <Label htmlFor="endDate">End Date</Label>
+              <Label htmlFor="endDate">تاريخ النهاية</Label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
                 <Input
@@ -376,7 +399,7 @@ export default function Reports() {
             <div className="flex items-end">
               <Button onClick={downloadCSV} className="w-full">
                 <Download size={16} className="mr-2" />
-                Export CSV
+                تصدير CSV
               </Button>
             </div>
           </div>
@@ -389,7 +412,7 @@ export default function Reports() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Items</p>
+                <p className="text-sm text-muted-foreground">إجمالي العناصر</p>
                 <p className="text-2xl font-bold">{getFilteredItems().length}</p>
               </div>
               <Package className="text-blue-600" size={24} />
@@ -401,7 +424,7 @@ export default function Reports() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Transactions</p>
+                <p className="text-sm text-muted-foreground">إجمالي المعاملات</p>
                 <p className="text-2xl font-bold">{getFilteredTransactions().length}</p>
               </div>
               <ArrowLeftRight className="text-green-600" size={24} />
@@ -413,7 +436,7 @@ export default function Reports() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Low Stock Items</p>
+                <p className="text-sm text-muted-foreground">عناصر المخزون المنخفض</p>
                 <p className="text-2xl font-bold text-red-600">
                   {getFilteredInventory().filter(inv => inv.quantity <= inv.item.minStockLevel).length}
                 </p>
@@ -429,9 +452,9 @@ export default function Reports() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileBarChart size={20} />
-            {reportType === "inventory" && "Inventory Report"}
-            {reportType === "transactions" && "Transaction History"}
-            {reportType === "lowstock" && "Low Stock Report"}
+            {reportType === "inventory" && "تقرير المخزون"}
+            {reportType === "transactions" && "تاريخ المعاملات"}
+            {reportType === "lowstock" && "تقرير المخزون المنخفض"}
           </CardTitle>
         </CardHeader>
         <CardContent>
