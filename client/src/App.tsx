@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Redirect, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Building2 } from "lucide-react";
 import itiLogoPath from "@assets/iti_logo_1751453860420.png";
 
@@ -102,17 +102,38 @@ function LoginPage() {
   );
 }
 
+function ProtectedRoute({ component: Component, adminOnly = false }: { component: React.ComponentType; adminOnly?: boolean }) {
+  const { user } = useAuth();
+  
+  if (adminOnly && user?.role !== "admin") {
+    return <NotFound />;
+  }
+  
+  return <Component />;
+}
+
 function AppRouter() {
+  const { user } = useAuth();
+  const [location, navigate] = useLocation();
+  
+  // Redirect data entry users from restricted pages
+  useEffect(() => {
+    if (user?.role === "data_entry") {
+      if (location === "/" || location === "/categories" || location === "/users") {
+        navigate("/warehouses");
+      }
+    }
+  }, [user, location, navigate]);
+  
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
-
-      <Route path="/categories" component={Categories} />
+      <Route path="/" component={() => <ProtectedRoute component={Dashboard} adminOnly={true} />} />
+      <Route path="/categories" component={() => <ProtectedRoute component={Categories} adminOnly={true} />} />
       <Route path="/warehouses" component={Warehouses} />
       <Route path="/suppliers" component={Suppliers} />
       <Route path="/transactions" component={Transactions} />
       <Route path="/reports" component={Reports} />
-      <Route path="/users" component={Users} />
+      <Route path="/users" component={() => <ProtectedRoute component={Users} adminOnly={true} />} />
       <Route component={NotFound} />
     </Switch>
   );

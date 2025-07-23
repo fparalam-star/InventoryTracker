@@ -121,6 +121,10 @@ Language: Full Arabic localization requested for entire application interface.
 
 ## Recent Changes
 
+- July 23, 2025: Implemented role-based access control restricting dashboard and categories pages to admin users only
+  - Data entry users can only access warehouses, suppliers, transactions, and reports
+  - Admin users have access to all features including dashboard, categories, and user management
+  - Automatic redirection for data entry users who try to access restricted pages
 - July 23, 2025: Removed Inventory page from sidebar navigation as it duplicated transaction functionality
 - July 23, 2025: Completed full Arabic translation of entire application interface including:
   - Login page, sidebar navigation, dashboard components
