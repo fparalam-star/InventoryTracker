@@ -49,7 +49,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading dashboard...</p>
+          <p className="mt-2 text-muted-foreground">جاري تحميل لوحة التحكم...</p>
         </div>
       </div>
     );
@@ -60,28 +60,28 @@ export default function Dashboard() {
       {/* Dashboard Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricsCard
-          title="Total Warehouses"
+          title="إجمالي المستودعات"
           value={metrics?.warehouses || 0}
           icon={<Building2 className="text-blue-600" size={24} />}
           iconBgColor="bg-blue-100"
         />
         
         <MetricsCard
-          title="Total Categories"
+          title="إجمالي الفئات"
           value={metrics?.categories || 0}
           icon={<Tags className="text-green-600" size={24} />}
           iconBgColor="bg-green-100"
         />
         
         <MetricsCard
-          title="Total Items"
+          title="إجمالي العناصر"
           value={metrics?.items || 0}
           icon={<Package className="text-orange-600" size={24} />}
           iconBgColor="bg-orange-100"
         />
         
         <MetricsCard
-          title="Total Users"
+          title="إجمالي المستخدمين"
           value={metrics?.users || 0}
           icon={<Users className="text-purple-600" size={24} />}
           iconBgColor="bg-purple-100"
@@ -91,21 +91,21 @@ export default function Dashboard() {
       {/* Additional Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <MetricsCard
-          title="Total Suppliers"
+          title="إجمالي الموردين"
           value={metrics?.suppliers || 0}
           icon={<Truck className="text-indigo-600" size={20} />}
           iconBgColor="bg-indigo-100"
         />
         
         <MetricsCard
-          title="Low Stock Items"
+          title="العناصر منخفضة المخزون"
           value={metrics?.lowStockItems || 0}
           icon={<AlertTriangle className="text-red-600" size={20} />}
           iconBgColor="bg-red-100"
         />
         
         <MetricsCard
-          title="Today's Transactions"
+          title="معاملات اليوم"
           value={metrics?.todayTransactions || 0}
           icon={<ArrowLeftRight className="text-teal-600" size={20} />}
           iconBgColor="bg-teal-100"
@@ -121,18 +121,18 @@ export default function Dashboard() {
         {/* Placeholder for future chart */}
         <div className="bg-card rounded-xl shadow-sm border p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold">Inventory Levels</h3>
+            <h3 className="text-lg font-semibold">مستويات المخزون</h3>
             <select className="text-sm border border-input rounded-lg px-3 py-1">
-              <option>Last 7 days</option>
-              <option>Last 30 days</option>
-              <option>Last 3 months</option>
+              <option>آخر 7 أيام</option>
+              <option>آخر 30 يوم</option>
+              <option>آخر 3 شهور</option>
             </select>
           </div>
           <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
             <div className="text-center text-muted-foreground">
               <BarChart3 size={48} className="mx-auto mb-4" />
-              <p>Chart visualization</p>
-              <p className="text-sm">Coming soon</p>
+              <p>مخطط بياني</p>
+              <p className="text-sm">قريباً</p>
             </div>
           </div>
         </div>
@@ -140,7 +140,7 @@ export default function Dashboard() {
 
       {/* Quick Actions Section */}
       <div className="bg-card rounded-xl shadow-sm border p-6">
-        <h3 className="text-lg font-semibold mb-6">Quick Actions</h3>
+        <h3 className="text-lg font-semibold mb-6">الإجراءات السريعة</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Button 
@@ -149,7 +149,7 @@ export default function Dashboard() {
             onClick={() => setTransactionModalOpen(true)}
           >
             <Plus className="text-primary" size={24} />
-            <span className="font-medium text-primary">Add Transaction</span>
+            <span className="font-medium text-primary">إضافة معاملة</span>
           </Button>
 
           <Button 
@@ -158,7 +158,7 @@ export default function Dashboard() {
             onClick={() => setTransferModalOpen(true)}
           >
             <ArrowUpDown className="text-orange-500" size={24} />
-            <span className="font-medium text-orange-500">Transfer Items</span>
+            <span className="font-medium text-orange-500">نقل العناصر</span>
           </Button>
 
           <Button 
@@ -167,7 +167,7 @@ export default function Dashboard() {
             onClick={() => setLocation('/reports')}
           >
             <BarChart3 className="text-amber-500" size={24} />
-            <span className="font-medium text-amber-500">Generate Report</span>
+            <span className="font-medium text-amber-500">إنشاء تقرير</span>
           </Button>
 
           <Button 
@@ -176,7 +176,7 @@ export default function Dashboard() {
             onClick={() => setLocation('/suppliers')}
           >
             <UserPlus className="text-purple-500" size={24} />
-            <span className="font-medium text-purple-500">Add Supplier</span>
+            <span className="font-medium text-purple-500">إضافة مورد</span>
           </Button>
         </div>
       </div>

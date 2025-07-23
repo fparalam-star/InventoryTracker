@@ -71,14 +71,14 @@ export default function Categories() {
       setIsAddDialogOpen(false);
       form.reset();
       toast({
-        title: "Success",
-        description: "Category added successfully",
+        title: "نجح",
+        description: "تم إضافة الفئة بنجاح",
       });
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to add category",
+        title: "خطأ",
+        description: "فشل في إضافة الفئة",
         variant: "destructive",
       });
     },
@@ -93,14 +93,14 @@ export default function Categories() {
       setEditingCategory(null);
       editForm.reset();
       toast({
-        title: "Success",
-        description: "Category updated successfully",
+        title: "نجح",
+        description: "تم تحديث الفئة بنجاح",
       });
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to update category",
+        title: "خطأ",
+        description: "فشل في تحديث الفئة",
         variant: "destructive",
       });
     },
@@ -144,7 +144,7 @@ export default function Categories() {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this category?")) {
+    if (confirm("هل أنت متأكد من حذف هذه الفئة؟")) {
       deleteMutation.mutate(id);
     }
   };
@@ -154,7 +154,7 @@ export default function Categories() {
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading categories...</p>
+          <p className="mt-2 text-muted-foreground">جاري تحميل الفئات...</p>
         </div>
       </div>
     );
@@ -164,30 +164,30 @@ export default function Categories() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Categories</h1>
-          <p className="text-muted-foreground">Manage product categories</p>
+          <h1 className="text-3xl font-bold">الفئات</h1>
+          <p className="text-muted-foreground">إدارة فئات المنتجات</p>
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="w-4 h-4 mr-2" />
-              Add Category
+              إضافة فئة
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New Category</DialogTitle>
+              <DialogTitle>إضافة فئة جديدة</DialogTitle>
               <DialogDescription>
-                Create a new category for organizing your inventory items.
+                إنشاء فئة جديدة لتنظيم عناصر المخزون الخاصة بك.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={form.handleSubmit(handleAdd)} className="space-y-4">
               <div>
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">الاسم</Label>
                 <Input
                   id="name"
                   {...form.register("name")}
-                  placeholder="Enter category name"
+                  placeholder="أدخل اسم الفئة"
                 />
                 {form.formState.errors.name && (
                   <p className="text-sm text-red-500 mt-1">
@@ -196,11 +196,11 @@ export default function Categories() {
                 )}
               </div>
               <div>
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">الوصف</Label>
                 <Textarea
                   id="description"
                   {...form.register("description")}
-                  placeholder="Enter category description (optional)"
+                  placeholder="أدخل وصف الفئة (اختياري)"
                 />
                 {form.formState.errors.description && (
                   <p className="text-sm text-red-500 mt-1">
@@ -210,7 +210,7 @@ export default function Categories() {
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={addMutation.isPending}>
-                  {addMutation.isPending ? "Adding..." : "Add Category"}
+                  {addMutation.isPending ? "جاري الإضافة..." : "إضافة فئة"}
                 </Button>
               </DialogFooter>
             </form>
@@ -223,7 +223,7 @@ export default function Categories() {
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Total Categories</p>
+              <p className="text-sm text-muted-foreground">إجمالي الفئات</p>
               <p className="text-2xl font-bold">{categories.length}</p>
             </div>
             <Tags className="text-blue-600" size={24} />
@@ -234,23 +234,23 @@ export default function Categories() {
       {/* Categories Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Categories</CardTitle>
+          <CardTitle>جميع الفئات</CardTitle>
         </CardHeader>
         <CardContent>
           {categories.length === 0 ? (
             <div className="text-center py-8">
               <Tags className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">No categories found</p>
+              <p className="text-muted-foreground">لم يتم العثور على فئات</p>
             </div>
           ) : (
             <div className="overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Created Date</TableHead>
-                    <TableHead className="w-[100px]">Actions</TableHead>
+                    <TableHead>الاسم</TableHead>
+                    <TableHead>الوصف</TableHead>
+                    <TableHead>تاريخ الإنشاء</TableHead>
+                    <TableHead className="w-[100px]">الإجراءات</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -262,7 +262,7 @@ export default function Categories() {
                       <TableCell>
                         {category.description || (
                           <span className="text-muted-foreground italic">
-                            No description
+                            لا يوجد وصف
                           </span>
                         )}
                       </TableCell>

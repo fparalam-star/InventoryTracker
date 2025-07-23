@@ -8,7 +8,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
-import Inventory from "@/pages/inventory";
+
 import Categories from "@/pages/categories";
 import Warehouses from "@/pages/warehouses";
 import Suppliers from "@/pages/suppliers";
@@ -57,44 +57,44 @@ function LoginPage() {
               />
             </div>
           </div>
-          <CardTitle className="text-2xl">ITI Inventory System</CardTitle>
-          <p className="text-muted-foreground">Sign in to your account</p>
+          <CardTitle className="text-2xl">نظام إدارة المخزون ITI</CardTitle>
+          <p className="text-muted-foreground">تسجيل الدخول إلى حسابك</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">اسم المستخدم</Label>
               <Input
                 id="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username"
+                placeholder="أدخل اسم المستخدم"
                 required
               />
             </div>
             <div>
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">كلمة المرور</Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
+                placeholder="أدخل كلمة المرور"
                 required
               />
             </div>
             {error && (
-              <div className="text-sm text-destructive">{error}</div>
+              <div className="text-sm text-destructive">بيانات الدخول غير صحيحة</div>
             )}
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Signing in..." : "Sign In"}
+              {isLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm text-muted-foreground">
-            <p>Demo accounts:</p>
-            <p>Admin: admin / admin123</p>
-            <p>Data Entry: dataentry / dataentry123</p>
+            <p>حسابات تجريبية:</p>
+            <p>مدير: admin / admin123</p>
+            <p>إدخال بيانات: dataentry / dataentry123</p>
           </div>
         </CardContent>
       </Card>
@@ -106,7 +106,7 @@ function AppRouter() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
-      <Route path="/inventory" component={Inventory} />
+
       <Route path="/categories" component={Categories} />
       <Route path="/warehouses" component={Warehouses} />
       <Route path="/suppliers" component={Suppliers} />
@@ -126,7 +126,7 @@ function AuthenticatedApp() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading...</p>
+          <p className="mt-2 text-muted-foreground">جاري التحميل...</p>
         </div>
       </div>
     );

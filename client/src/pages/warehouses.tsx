@@ -220,6 +220,7 @@ export default function Warehouses() {
                           placeholder="Enter warehouse description" 
                           className="resize-none" 
                           {...field} 
+                          value={field.value || ""}
                         />
                       </FormControl>
                       <FormMessage />

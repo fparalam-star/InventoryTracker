@@ -117,9 +117,21 @@ This is a full-stack inventory management system built with React, TypeScript, E
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Language: Full Arabic localization requested for entire application interface.
 
 ## Recent Changes
 
+- July 23, 2025: Removed Inventory page from sidebar navigation as it duplicated transaction functionality
+- July 23, 2025: Completed full Arabic translation of entire application interface including:
+  - Login page, sidebar navigation, dashboard components
+  - Categories, warehouses, suppliers, transactions, and user management pages
+  - All form labels, buttons, error messages, and status text
+  - Recent activity descriptions and dashboard metrics
+- July 23, 2025: Fixed Select component error in user creation form by replacing empty string value with "none"
+- July 23, 2025: Implemented cascading dropdown functionality for transaction creation
+- July 23, 2025: Added category-based item filtering with option to create new items during transactions
+- July 23, 2025: Fixed Arabic text encoding in CSV exports with UTF-8 BOM support
+- July 23, 2025: Updated login page logo to use provided ITI logo instead of generic Building2 icon
 - July 02, 2025: Fixed transaction date validation - added z.coerce.date() to handle ISO date strings
 - July 02, 2025: Fixed category CRUD operations - added missing PUT and DELETE API endpoints
 - July 02, 2025: Corrected API parameter order in frontend calls (method, url, data)

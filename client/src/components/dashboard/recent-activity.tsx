@@ -25,41 +25,41 @@ export function RecentActivity({ activities }: RecentActivityProps) {
   const getActivityDescription = (activity: TransactionWithDetails) => {
     switch (activity.type) {
       case "incoming":
-        return `${activity.item.name} added to ${activity.destinationWarehouse?.name} (Qty: ${activity.quantity})`;
+        return `تم إضافة ${activity.item.name} إلى ${activity.destinationWarehouse?.name} (الكمية: ${activity.quantity})`;
       case "outgoing":
-        return `${activity.item.name} removed for internal use (Qty: ${activity.quantity})`;
+        return `تم إخراج ${activity.item.name} للاستخدام الداخلي (الكمية: ${activity.quantity})`;
       case "transfer":
-        return `${activity.item.name} transferred from ${activity.sourceWarehouse?.name} to ${activity.destinationWarehouse?.name} (Qty: ${activity.quantity})`;
+        return `تم نقل ${activity.item.name} من ${activity.sourceWarehouse?.name} إلى ${activity.destinationWarehouse?.name} (الكمية: ${activity.quantity})`;
       default:
-        return `Unknown transaction type`;
+        return `نوع معاملة غير معروف`;
     }
   };
 
   const getActivityTitle = (type: string) => {
     switch (type) {
       case "incoming":
-        return "Item Added to Inventory";
+        return "تم إضافة عنصر للمخزون";
       case "outgoing":
-        return "Item Used Internally";
+        return "تم استخدام عنصر داخلياً";
       case "transfer":
-        return "Item Transfer";
+        return "نقل عنصر";
       default:
-        return "Transaction";
+        return "معاملة";
     }
   };
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Recent Activity</CardTitle>
+        <CardTitle>الأنشطة الحديثة</CardTitle>
         <Button variant="ghost" size="sm">
-          View All
+          عرض الكل
         </Button>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           {activities.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">No recent activities</p>
+            <p className="text-muted-foreground text-center py-4">لا توجد أنشطة حديثة</p>
           ) : (
             activities.map((activity) => (
               <div key={activity.id} className="flex items-start space-x-3">
