@@ -14,10 +14,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Dashboard routes
   app.get("/api/dashboard/metrics", async (req, res) => {
     try {
+      console.log("Fetching dashboard metrics...");
       const metrics = await storage.getDashboardMetrics();
+      console.log("Dashboard metrics:", metrics);
       res.json(metrics);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch dashboard metrics" });
+      console.error("Dashboard metrics error:", error);
+      res.status(500).json({ message: "Failed to fetch dashboard metrics", error: error.message });
     }
   });
 
