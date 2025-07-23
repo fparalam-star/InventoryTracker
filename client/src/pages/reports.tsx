@@ -77,9 +77,9 @@ export default function Reports() {
       let matchesWarehouse = true;
       
       // For data entry users, only show transactions from their assigned warehouse
-      if (user?.role === "data_entry" && user?.warehouseId) {
-        matchesWarehouse = transaction.sourceWarehouseId === user.warehouseId || 
-                          transaction.destinationWarehouseId === user.warehouseId;
+      if (user?.role === "data_entry" && user?.assignedWarehouseId) {
+        matchesWarehouse = transaction.sourceWarehouseId === user.assignedWarehouseId || 
+                          transaction.destinationWarehouseId === user.assignedWarehouseId;
       } else if (selectedWarehouse !== "all") {
         const warehouseId = parseInt(selectedWarehouse);
         matchesWarehouse = transaction.sourceWarehouseId === warehouseId || 
@@ -92,8 +92,8 @@ export default function Reports() {
 
   const getFilteredInventory = () => {
     // For data entry users, only show inventory from their assigned warehouse
-    if (user?.role === "data_entry" && user?.warehouseId) {
-      return inventory.filter(inv => inv.warehouseId === user.warehouseId);
+    if (user?.role === "data_entry" && user?.assignedWarehouseId) {
+      return inventory.filter(inv => inv.warehouseId === user.assignedWarehouseId);
     }
     
     if (selectedWarehouse === "all") return inventory;
@@ -102,9 +102,9 @@ export default function Reports() {
 
   const getFilteredItems = () => {
     // For data entry users, only show items from their assigned warehouse
-    if (user?.role === "data_entry" && user?.warehouseId) {
+    if (user?.role === "data_entry" && user?.assignedWarehouseId) {
       return items.filter(item => 
-        item.inventory.some(inv => inv.warehouseId === user.warehouseId)
+        item.inventory.some(inv => inv.warehouseId === user.assignedWarehouseId)
       );
     }
     
@@ -126,6 +126,19 @@ export default function Reports() {
             inv.warehouse.name,
             inv.quantity.toString(),
             inv.item.minStockLevel.toString()
+          ])
+        };
+
+      case "items":
+        const itemsData = getFilteredItems();
+        return {
+          headers: ["اسم العنصر", "الفئة", "إجمالي المخزون", "الحد الأدنى", "الحالة"],
+          rows: itemsData.map(item => [
+            item.name,
+            item.category.name,
+            item.totalQuantity.toString(),
+            item.minStockLevel.toString(),
+            item.totalQuantity <= item.minStockLevel ? "مخزون منخفض" : "متوفر"
           ])
         };
       
@@ -214,6 +227,46 @@ export default function Reports() {
                   <TableCell className="font-medium">{inv.quantity}</TableCell>
                   <TableCell>
                     {inv.quantity <= inv.item.minStockLevel ? (
+                      <Badge variant="destructive">مخزون منخفض</Badge>
+                    ) : (
+                      <Badge variant="default">متوفر</Badge>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        );
+
+      case "items":
+        const itemsReportData = getFilteredItems();
+        return (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>العنصر</TableHead>
+                <TableHead>الفئة</TableHead>
+                <TableHead>إجمالي المخزون</TableHead>
+                <TableHead>الحد الأدنى</TableHead>
+                <TableHead>عدد المستودعات</TableHead>
+                <TableHead>الحالة</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {itemsReportData.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>
+                    <div className="font-medium">{item.name}</div>
+                    {item.description && (
+                      <div className="text-sm text-muted-foreground">{item.description}</div>
+                    )}
+                  </TableCell>
+                  <TableCell>{item.category.name}</TableCell>
+                  <TableCell className="font-medium">{item.totalQuantity}</TableCell>
+                  <TableCell>{item.minStockLevel}</TableCell>
+                  <TableCell>{item.inventory.length}</TableCell>
+                  <TableCell>
+                    {item.totalQuantity <= item.minStockLevel ? (
                       <Badge variant="destructive">مخزون منخفض</Badge>
                     ) : (
                       <Badge variant="default">متوفر</Badge>
@@ -343,6 +396,7 @@ export default function Reports() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="inventory">تقرير المخزون</SelectItem>
+                  <SelectItem value="items">تقرير العناصر</SelectItem>
                   <SelectItem value="transactions">تاريخ المعاملات</SelectItem>
                   <SelectItem value="lowstock">تقرير المخزون المنخفض</SelectItem>
                 </SelectContent>
@@ -453,6 +507,7 @@ export default function Reports() {
           <CardTitle className="flex items-center gap-2">
             <FileBarChart size={20} />
             {reportType === "inventory" && "تقرير المخزون"}
+            {reportType === "items" && "تقرير العناصر"}
             {reportType === "transactions" && "تاريخ المعاملات"}
             {reportType === "lowstock" && "تقرير المخزون المنخفض"}
           </CardTitle>
