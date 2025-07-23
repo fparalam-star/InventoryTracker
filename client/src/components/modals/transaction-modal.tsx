@@ -172,16 +172,16 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
       await createTransactionMutation.mutateAsync(transactionData);
 
       toast({
-        title: "Success",
-        description: "Transaction created successfully",
+        title: "نجح",
+        description: "تم إنشاء المعاملة بنجاح",
       });
 
       form.reset();
       onOpenChange(false);
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to create transaction",
+        title: "خطأ",
+        description: "فشل في إنشاء المعاملة",
         variant: "destructive",
       });
     }
@@ -210,7 +210,7 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create Transaction</DialogTitle>
+          <DialogTitle>إنشاء معاملة</DialogTitle>
         </DialogHeader>
         
         <Form {...form}>
@@ -221,7 +221,7 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
               name="transactionType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Transaction Type</FormLabel>
+                  <FormLabel>نوع المعاملة</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
@@ -236,8 +236,8 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
                         >
                           <ArrowDown className="text-green-600 mb-2" size={24} />
                           <div className="text-center">
-                            <div className="font-medium">Incoming</div>
-                            <div className="text-xs text-muted-foreground">From supplier</div>
+                            <div className="font-medium">وارد</div>
+                            <div className="text-xs text-muted-foreground">من المورد</div>
                           </div>
                         </Label>
                       </div>
@@ -250,8 +250,8 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
                         >
                           <ArrowUp className="text-red-600 mb-2" size={24} />
                           <div className="text-center">
-                            <div className="font-medium">Outgoing</div>
-                            <div className="text-xs text-muted-foreground">Internal use</div>
+                            <div className="font-medium">صادر</div>
+                            <div className="text-xs text-muted-foreground">استخدام داخلي</div>
                           </div>
                         </Label>
                       </div>
@@ -264,8 +264,8 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
                         >
                           <ArrowLeftRight className="text-orange-600 mb-2" size={24} />
                           <div className="text-center">
-                            <div className="font-medium">Transfer</div>
-                            <div className="text-xs text-muted-foreground">Between warehouses</div>
+                            <div className="font-medium">نقل</div>
+                            <div className="text-xs text-muted-foreground">بين المستودعات</div>
                           </div>
                         </Label>
                       </div>
@@ -292,12 +292,12 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
               name="quantity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quantity *</FormLabel>
+                  <FormLabel>الكمية *</FormLabel>
                   <FormControl>
                     <Input 
                       type="number" 
                       min="1" 
-                      placeholder="Enter quantity" 
+                      placeholder="أدخل الكمية" 
                       {...field}
                       onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
                     />
@@ -315,11 +315,11 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
                   name="supplierId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Supplier *</FormLabel>
+                      <FormLabel>المورد *</FormLabel>
                       <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select supplier" />
+                            <SelectValue placeholder="اختر المورد" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -340,11 +340,11 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
                   name="destinationWarehouseId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Destination Warehouse *</FormLabel>
+                      <FormLabel>المستودع الوجهة *</FormLabel>
                       <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select warehouse" />
+                            <SelectValue placeholder="اختر المستودع" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -368,11 +368,11 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
                 name="sourceWarehouseId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Source Warehouse *</FormLabel>
+                    <FormLabel>المستودع المصدر *</FormLabel>
                     <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select warehouse" />
+                          <SelectValue placeholder="اختر المستودع" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -396,11 +396,11 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
                   name="sourceWarehouseId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Source Warehouse *</FormLabel>
+                      <FormLabel>المستودع المصدر *</FormLabel>
                       <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select source" />
+                            <SelectValue placeholder="اختر المصدر" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -421,11 +421,11 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
                   name="destinationWarehouseId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Destination Warehouse *</FormLabel>
+                      <FormLabel>المستودع الوجهة *</FormLabel>
                       <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select destination" />
+                            <SelectValue placeholder="اختر الوجهة" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -450,7 +450,7 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
                 name="transactionDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Transaction Date *</FormLabel>
+                    <FormLabel>تاريخ المعاملة *</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -465,12 +465,12 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
                   name="minStockLevel"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Minimum Stock Level</FormLabel>
+                      <FormLabel>الحد الأدنى للمخزون</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
                           min="0" 
-                          placeholder="Enter minimum stock level" 
+                          placeholder="أدخل الحد الأدنى للمخزون" 
                           {...field}
                           onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                         />
@@ -488,10 +488,10 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes</FormLabel>
+                  <FormLabel>الملاحظات</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Additional notes (optional)" 
+                      placeholder="ملاحظات إضافية (اختيارية)" 
                       className="resize-none" 
                       {...field} 
                     />
@@ -504,13 +504,13 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
             {/* Submit Button */}
             <div className="flex justify-end space-x-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
+                إلغاء
               </Button>
               <Button 
                 type="submit" 
                 disabled={createItemMutation.isPending || createTransactionMutation.isPending}
               >
-                {createItemMutation.isPending || createTransactionMutation.isPending ? "Creating..." : "Create Transaction"}
+                {createItemMutation.isPending || createTransactionMutation.isPending ? "جاري الإنشاء..." : "إنشاء المعاملة"}
               </Button>
             </div>
           </form>

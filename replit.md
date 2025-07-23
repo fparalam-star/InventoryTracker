@@ -121,6 +121,11 @@ Language: Full Arabic localization requested for entire application interface.
 
 ## Recent Changes
 
+- July 23, 2025: Completed comprehensive Arabic translation for all modal sub-forms including transaction creation and transfer forms
+  - Translated all form fields, labels, placeholders, and buttons in TransactionModal and TransferModal components
+  - Translated CategoryItemSelector component used within transaction forms
+  - All success/error messages now display in Arabic
+  - Complete Arabic localization now covers all user interface elements
 - July 23, 2025: Implemented warehouse-specific data filtering for data entry users in reports and transactions
   - Data entry users only see data from their assigned warehouse in reports and transaction history
   - Admin users continue to see all data across all warehouses

@@ -105,8 +105,8 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
   const onSubmit = async (data: z.infer<typeof transferFormSchema>) => {
     if (data.quantity > availableQuantity) {
       toast({
-        title: "Error",
-        description: `Not enough quantity available. Only ${availableQuantity} items available.`,
+        title: "خطأ",
+        description: `الكمية المتاحة غير كافية. يتوفر فقط ${availableQuantity} عنصر.`,
         variant: "destructive",
       });
       return;
@@ -127,16 +127,16 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
       await createTransferMutation.mutateAsync(transactionData);
 
       toast({
-        title: "Success",
-        description: "Transfer completed successfully",
+        title: "نجح",
+        description: "تم النقل بنجاح",
       });
 
       form.reset();
       onOpenChange(false);
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to transfer items",
+        title: "خطأ",
+        description: "فشل في نقل العناصر",
         variant: "destructive",
       });
     }
@@ -146,7 +146,7 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Transfer Items</DialogTitle>
+          <DialogTitle>نقل العناصر</DialogTitle>
         </DialogHeader>
         
         <Form {...form}>
@@ -156,17 +156,17 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
               name="itemId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Select Item *</FormLabel>
+                  <FormLabel>اختر العنصر *</FormLabel>
                   <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Choose item to transfer" />
+                        <SelectValue placeholder="اختر العنصر للنقل" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {items.map((item) => (
                         <SelectItem key={item.id} value={item.id.toString()}>
-                          {item.name} (Total: {item.totalQuantity})
+                          {item.name} (الإجمالي: {item.totalQuantity})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -182,11 +182,11 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                 name="sourceWarehouseId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>From Warehouse *</FormLabel>
+                    <FormLabel>من المستودع *</FormLabel>
                     <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select source" />
+                          <SelectValue placeholder="اختر المصدر" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -207,11 +207,11 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                 name="destinationWarehouseId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>To Warehouse *</FormLabel>
+                    <FormLabel>إلى المستودع *</FormLabel>
                     <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select destination" />
+                          <SelectValue placeholder="اختر الوجهة" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -233,20 +233,20 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
               name="quantity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quantity *</FormLabel>
+                  <FormLabel>الكمية *</FormLabel>
                   <FormControl>
                     <Input 
                       type="number" 
                       min="1" 
                       max={availableQuantity}
-                      placeholder="Enter quantity to transfer" 
+                      placeholder="أدخل الكمية للنقل" 
                       {...field}
                       onChange={(e) => field.onChange(parseInt(e.target.value))}
                     />
                   </FormControl>
                   {selectedItemId && selectedSourceWarehouseId && (
                     <p className="text-sm text-muted-foreground">
-                      Available quantity: {availableQuantity}
+                      الكمية المتاحة: {availableQuantity}
                     </p>
                   )}
                   <FormMessage />
@@ -259,7 +259,7 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
               name="transactionDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Transfer Date *</FormLabel>
+                  <FormLabel>تاريخ النقل *</FormLabel>
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>
@@ -273,10 +273,10 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes</FormLabel>
+                  <FormLabel>الملاحظات</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Optional transfer notes" 
+                      placeholder="ملاحظات النقل الاختيارية" 
                       className="resize-none" 
                       {...field} 
                     />
@@ -293,14 +293,14 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                 variant="outline" 
                 onClick={() => onOpenChange(false)}
               >
-                Cancel
+                إلغاء
               </Button>
               <Button 
                 type="submit" 
                 disabled={createTransferMutation.isPending}
                 className="bg-orange-600 hover:bg-orange-700"
               >
-                {createTransferMutation.isPending ? "Transferring..." : "Transfer Items"}
+                {createTransferMutation.isPending ? "جاري النقل..." : "نقل العناصر"}
               </Button>
             </div>
           </form>

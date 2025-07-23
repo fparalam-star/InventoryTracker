@@ -98,13 +98,13 @@ export function CategoryItemSelector({
     <div className="space-y-4">
       {/* Category Selection */}
       <div>
-        <Label htmlFor="category">Category *</Label>
+        <Label htmlFor="category">الفئة *</Label>
         <Select 
           value={selectedCategoryId?.toString()} 
           onValueChange={handleCategoryChange}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select category" />
+            <SelectValue placeholder="اختر الفئة" />
           </SelectTrigger>
           <SelectContent>
             {categories.map((category) => (
@@ -119,7 +119,7 @@ export function CategoryItemSelector({
       {/* Item Selection Type */}
       {selectedCategoryId && (
         <div>
-          <Label>Item Selection</Label>
+          <Label>اختيار العنصر</Label>
           <RadioGroup
             value={itemSelectionType}
             onValueChange={handleItemSelectionTypeChange}
@@ -127,11 +127,11 @@ export function CategoryItemSelector({
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="existing" id="existing" />
-              <Label htmlFor="existing">Select existing item</Label>
+              <Label htmlFor="existing">اختر عنصر موجود</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="new" id="new" />
-              <Label htmlFor="new">Create new item</Label>
+              <Label htmlFor="new">إنشاء عنصر جديد</Label>
             </div>
           </RadioGroup>
         </div>
@@ -140,14 +140,14 @@ export function CategoryItemSelector({
       {/* Existing Item Selection */}
       {selectedCategoryId && itemSelectionType === "existing" && (
         <div>
-          <Label htmlFor="existingItem">Select Item *</Label>
+          <Label htmlFor="existingItem">اختر العنصر *</Label>
           {filteredItems.length > 0 ? (
             <Select 
               value={selectedExistingItemId?.toString()} 
               onValueChange={handleExistingItemChange}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select item" />
+                <SelectValue placeholder="اختر العنصر" />
               </SelectTrigger>
               <SelectContent>
                 {filteredItems.map((item) => (
@@ -159,7 +159,7 @@ export function CategoryItemSelector({
             </Select>
           ) : (
             <p className="text-sm text-muted-foreground p-2 border rounded-md">
-              No items found in this category. Please create a new item.
+              لا توجد عناصر في هذه الفئة. يرجى إنشاء عنصر جديد.
             </p>
           )}
         </div>
@@ -168,11 +168,11 @@ export function CategoryItemSelector({
       {/* New Item Name Input */}
       {selectedCategoryId && itemSelectionType === "new" && (
         <div>
-          <Label htmlFor="newItemName">Item Name *</Label>
+          <Label htmlFor="newItemName">اسم العنصر *</Label>
           <Input
             id="newItemName"
             type="text"
-            placeholder="Enter item name"
+            placeholder="أدخل اسم العنصر"
             value={newItemName}
             onChange={(e) => handleNewItemNameChange(e.target.value)}
           />
