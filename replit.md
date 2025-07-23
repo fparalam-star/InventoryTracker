@@ -121,6 +121,8 @@ Language: Full Arabic localization requested for entire application interface.
 
 ## Recent Changes
 
+- July 23, 2025: Removed visible login credentials from login page for improved security (no longer shows admin/admin123 and dataentry/dataentry123 on screen)
+- July 23, 2025: Added comprehensive Items Report showing detailed item information with category associations, stock levels, and warehouse distribution
 - July 23, 2025: Completed comprehensive Arabic translation for all modal sub-forms including transaction creation and transfer forms
   - Translated all form fields, labels, placeholders, and buttons in TransactionModal and TransferModal components
   - Translated CategoryItemSelector component used within transaction forms

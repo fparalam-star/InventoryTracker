@@ -91,11 +91,6 @@ function LoginPage() {
               {isLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm text-muted-foreground">
-            <p>حسابات تجريبية:</p>
-            <p>مدير: admin / admin123</p>
-            <p>إدخال بيانات: dataentry / dataentry123</p>
-          </div>
         </CardContent>
       </Card>
     </div>
