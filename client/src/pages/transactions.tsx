@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,6 +22,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { TransactionModal } from "@/components/modals/transaction-modal";
 import { TransferModal } from "@/components/modals/transfer-modal";
 import { EditTransactionModal } from "@/components/modals/edit-transaction-modal";
@@ -32,13 +45,16 @@ import {
   Plus,
   Calendar,
   User,
-  Edit2
+  Edit2,
+  Trash2
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import type { TransactionWithDetails } from "@shared/schema";
 
 export default function Transactions() {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<string>("all");
   const [startDate, setStartDate] = useState("");
@@ -50,6 +66,30 @@ export default function Transactions() {
 
   const { data: transactions = [], isLoading } = useQuery<TransactionWithDetails[]>({
     queryKey: ["/api/transactions"],
+  });
+
+  const deleteTransactionMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("DELETE", `/api/transactions/${id}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/metrics"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/recent-activities"] });
+      toast({
+        title: "نجح",
+        description: "تم حذف المعاملة بنجاح",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "خطأ",
+        description: "فشل في حذف المعاملة",
+        variant: "destructive",
+      });
+    },
   });
 
   // Filter transactions based on search, type, date range, and user role
@@ -71,9 +111,9 @@ export default function Transactions() {
     
     // For data entry users, only show transactions from their assigned warehouse
     let matchesWarehouse = true;
-    if (user?.role === "data_entry" && user?.warehouseId) {
-      matchesWarehouse = transaction.sourceWarehouseId === user.warehouseId || 
-                        transaction.destinationWarehouseId === user.warehouseId;
+    if (user?.role === "data_entry" && user?.assignedWarehouseId) {
+      matchesWarehouse = transaction.sourceWarehouseId === user.assignedWarehouseId || 
+                        transaction.destinationWarehouseId === user.assignedWarehouseId;
     }
     
     return matchesSearch && matchesType && matchesDateRange && matchesWarehouse;
@@ -102,6 +142,19 @@ export default function Transactions() {
         return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">نقل</Badge>;
       default:
         return <Badge variant="secondary">{type}</Badge>;
+    }
+  };
+
+  const getTransactionTypeInArabic = (type: string) => {
+    switch (type) {
+      case "incoming":
+        return "وارد";
+      case "outgoing":
+        return "صادر";
+      case "transfer":
+        return "نقل";
+      default:
+        return "غير معروف";
     }
   };
 
@@ -284,18 +337,57 @@ export default function Transactions() {
                       </TableCell>
                       {user?.role === "admin" && (
                         <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedTransaction(transaction);
-                              setEditModalOpen(true);
-                            }}
-                            className="gap-1"
-                          >
-                            <Edit2 size={14} />
-                            تعديل
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedTransaction(transaction);
+                                setEditModalOpen(true);
+                              }}
+                              className="gap-1"
+                            >
+                              <Edit2 size={14} />
+                              تعديل
+                            </Button>
+                            
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-1 text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 size={14} />
+                                  حذف
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>تأكيد الحذف</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    هل أنت متأكد من حذف هذه المعاملة؟ هذا الإجراء لا يمكن التراجع عنه.
+                                    <br />
+                                    <strong>المعاملة:</strong> {getTransactionTypeInArabic(transaction.type)} - {transaction.item.name}
+                                    <br />
+                                    <strong>الكمية:</strong> {transaction.quantity}
+                                    <br />
+                                    <strong>التاريخ:</strong> {new Date(transaction.transactionDate).toLocaleDateString()}
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => deleteTransactionMutation.mutate(transaction.id)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    disabled={deleteTransactionMutation.isPending}
+                                  >
+                                    {deleteTransactionMutation.isPending ? "جاري الحذف..." : "تأكيد الحذف"}
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </TableCell>
                       )}
                     </TableRow>

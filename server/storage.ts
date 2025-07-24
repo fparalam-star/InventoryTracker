@@ -61,6 +61,7 @@ export interface IStorage {
   getTransactions(): Promise<TransactionWithDetails[]>;
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   updateTransaction(id: number, transaction: Partial<InsertTransaction>): Promise<Transaction | undefined>;
+  deleteTransaction(id: number): Promise<boolean>;
   getTransactionsByDateRange(startDate: Date, endDate: Date): Promise<TransactionWithDetails[]>;
   getTodayTransactions(): Promise<TransactionWithDetails[]>;
 
@@ -525,6 +526,10 @@ export class MemStorage implements IStorage {
     return updated;
   }
 
+  async deleteTransaction(id: number): Promise<boolean> {
+    return this.transactions.delete(id);
+  }
+
   async getTransactionsByDateRange(startDate: Date, endDate: Date): Promise<TransactionWithDetails[]> {
     const allTransactions = await this.getTransactions();
     return allTransactions.filter(trans => 
@@ -978,6 +983,19 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async deleteTransaction(id: number): Promise<boolean> {
+    try {
+      const [deletedTransaction] = await db
+        .delete(transactions)
+        .where(eq(transactions.id, id))
+        .returning();
+      return !!deletedTransaction;
+    } catch (error) {
+      console.error("Error deleting transaction:", error);
+      throw error;
+    }
+  }
+
   async getTransactionsByDateRange(startDate: Date, endDate: Date): Promise<TransactionWithDetails[]> {
     const allTransactions = await this.getTransactions();
     return allTransactions.filter(trans => 
@@ -1275,6 +1293,13 @@ class HybridStorage implements IStorage {
     return this.tryDb(
       () => this.dbStorage.updateTransaction(id, transaction),
       () => this.memStorage.updateTransaction(id, transaction)
+    );
+  }
+
+  async deleteTransaction(id: number): Promise<boolean> {
+    return this.tryDb(
+      () => this.dbStorage.deleteTransaction(id),
+      () => this.memStorage.deleteTransaction(id)
     );
   }
 
