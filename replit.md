@@ -122,6 +122,19 @@ Language: Full Arabic localization requested for entire application interface.
 
 ## Recent Changes
 
+- July 24, 2025: **CRITICAL INVENTORY FIX:** Fixed inventory quantity not updating when transactions are deleted
+  - Added adjustInventoryForDeletedTransaction logic to both DatabaseStorage and MemStorage
+  - When deleting transactions, inventory quantities are now properly adjusted based on transaction type
+  - Incoming transactions: reduce quantity from destination warehouse
+  - Outgoing transactions: add quantity back to source warehouse  
+  - Transfer transactions: reverse both source and destination warehouse changes
+  - Inventory quantities in reports now accurately reflect actual stock after transaction deletions
+- July 24, 2025: **ADMIN TRANSACTION MANAGEMENT:** Completed transaction edit and delete functionality for admin users
+  - Added updateTransaction and deleteTransaction methods to all storage interfaces
+  - Created EditTransactionModal component for transaction editing
+  - Added edit and delete buttons in transactions table (admin-only access)
+  - Transaction deletion includes confirmation dialog with transaction details
+  - All changes maintain Arabic language support
 - July 23, 2025: **MAJOR INFRASTRUCTURE UPDATE:** Successfully migrated entire application from in-memory storage to PostgreSQL database storage
   - All CRUD operations now use PostgreSQL for persistent data storage
   - Dashboard metrics display accurate real-time counts from database

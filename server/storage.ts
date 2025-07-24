@@ -527,7 +527,80 @@ export class MemStorage implements IStorage {
   }
 
   async deleteTransaction(id: number): Promise<boolean> {
-    return this.transactions.delete(id);
+    const transaction = this.transactions.get(id);
+    if (!transaction) return false;
+
+    // Remove the transaction
+    const deleted = this.transactions.delete(id);
+    
+    if (deleted) {
+      // Adjust inventory for deleted transaction
+      this.adjustInventoryForDeletedTransaction(transaction);
+    }
+    
+    return deleted;
+  }
+
+  private adjustInventoryForDeletedTransaction(transaction: Transaction): void {
+    if (transaction.type === "incoming") {
+      // For incoming transactions, reduce the quantity from destination warehouse
+      if (transaction.destinationWarehouseId) {
+        this.adjustInventoryQuantity(
+          transaction.itemId,
+          transaction.destinationWarehouseId,
+          -transaction.quantity
+        );
+      }
+    } else if (transaction.type === "outgoing") {
+      // For outgoing transactions, add the quantity back to source warehouse
+      if (transaction.sourceWarehouseId) {
+        this.adjustInventoryQuantity(
+          transaction.itemId,
+          transaction.sourceWarehouseId,
+          transaction.quantity
+        );
+      }
+    } else if (transaction.type === "transfer") {
+      // For transfer transactions, reverse both movements
+      if (transaction.sourceWarehouseId) {
+        this.adjustInventoryQuantity(
+          transaction.itemId,
+          transaction.sourceWarehouseId,
+          transaction.quantity
+        );
+      }
+      if (transaction.destinationWarehouseId) {
+        this.adjustInventoryQuantity(
+          transaction.itemId,
+          transaction.destinationWarehouseId,
+          -transaction.quantity
+        );
+      }
+    }
+  }
+
+  private adjustInventoryQuantity(itemId: number, warehouseId: number, quantityChange: number): void {
+    const key = `${itemId}-${warehouseId}`;
+    const existingInventory = this.inventory.get(key);
+    
+    if (existingInventory) {
+      // Update existing inventory
+      const newQuantity = Math.max(0, existingInventory.quantity + quantityChange);
+      this.inventory.set(key, {
+        ...existingInventory,
+        quantity: newQuantity,
+        updatedAt: new Date()
+      });
+    } else if (quantityChange > 0) {
+      // Create new inventory record only if adding quantity
+      this.inventory.set(key, {
+        id: this.nextInventoryId++,
+        itemId,
+        warehouseId,
+        quantity: quantityChange,
+        updatedAt: new Date()
+      });
+    }
   }
 
   async getTransactionsByDateRange(startDate: Date, endDate: Date): Promise<TransactionWithDetails[]> {
@@ -985,13 +1058,110 @@ export class DatabaseStorage implements IStorage {
 
   async deleteTransaction(id: number): Promise<boolean> {
     try {
+      // First, get the transaction details before deleting it
+      const [transactionToDelete] = await db
+        .select()
+        .from(transactions)
+        .where(eq(transactions.id, id));
+      
+      if (!transactionToDelete) {
+        return false;
+      }
+
+      // Delete the transaction
       const [deletedTransaction] = await db
         .delete(transactions)
         .where(eq(transactions.id, id))
         .returning();
-      return !!deletedTransaction;
+
+      if (!deletedTransaction) {
+        return false;
+      }
+
+      // Now adjust inventory based on the deleted transaction
+      await this.adjustInventoryForDeletedTransaction(transactionToDelete);
+
+      return true;
     } catch (error) {
       console.error("Error deleting transaction:", error);
+      throw error;
+    }
+  }
+
+  private async adjustInventoryForDeletedTransaction(transaction: Transaction): Promise<void> {
+    try {
+      if (transaction.type === "incoming") {
+        // For incoming transactions, reduce the quantity from destination warehouse
+        if (transaction.destinationWarehouseId) {
+          await this.adjustInventoryQuantity(
+            transaction.itemId,
+            transaction.destinationWarehouseId,
+            -transaction.quantity
+          );
+        }
+      } else if (transaction.type === "outgoing") {
+        // For outgoing transactions, add the quantity back to source warehouse
+        if (transaction.sourceWarehouseId) {
+          await this.adjustInventoryQuantity(
+            transaction.itemId,
+            transaction.sourceWarehouseId,
+            transaction.quantity
+          );
+        }
+      } else if (transaction.type === "transfer") {
+        // For transfer transactions, reverse both movements
+        if (transaction.sourceWarehouseId) {
+          await this.adjustInventoryQuantity(
+            transaction.itemId,
+            transaction.sourceWarehouseId,
+            transaction.quantity
+          );
+        }
+        if (transaction.destinationWarehouseId) {
+          await this.adjustInventoryQuantity(
+            transaction.itemId,
+            transaction.destinationWarehouseId,
+            -transaction.quantity
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error adjusting inventory for deleted transaction:", error);
+      throw error;
+    }
+  }
+
+  private async adjustInventoryQuantity(itemId: number, warehouseId: number, quantityChange: number): Promise<void> {
+    try {
+      // Check if inventory record exists
+      const [existingInventory] = await db
+        .select()
+        .from(inventory)
+        .where(and(eq(inventory.itemId, itemId), eq(inventory.warehouseId, warehouseId)));
+
+      if (existingInventory) {
+        // Update existing inventory
+        const newQuantity = Math.max(0, existingInventory.quantity + quantityChange);
+        await db
+          .update(inventory)
+          .set({ 
+            quantity: newQuantity,
+            updatedAt: new Date()
+          })
+          .where(and(eq(inventory.itemId, itemId), eq(inventory.warehouseId, warehouseId)));
+      } else if (quantityChange > 0) {
+        // Create new inventory record only if adding quantity
+        await db
+          .insert(inventory)
+          .values({
+            itemId,
+            warehouseId,
+            quantity: quantityChange,
+            updatedAt: new Date()
+          });
+      }
+    } catch (error) {
+      console.error("Error adjusting inventory quantity:", error);
       throw error;
     }
   }
