@@ -60,6 +60,7 @@ export interface IStorage {
   // Transaction methods
   getTransactions(): Promise<TransactionWithDetails[]>;
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
+  updateTransaction(id: number, transaction: Partial<InsertTransaction>): Promise<Transaction | undefined>;
   getTransactionsByDateRange(startDate: Date, endDate: Date): Promise<TransactionWithDetails[]>;
   getTodayTransactions(): Promise<TransactionWithDetails[]>;
 
@@ -515,6 +516,15 @@ export class MemStorage implements IStorage {
     return transaction;
   }
 
+  async updateTransaction(id: number, updateData: Partial<InsertTransaction>): Promise<Transaction | undefined> {
+    const transaction = this.transactions.get(id);
+    if (!transaction) return undefined;
+    
+    const updated = { ...transaction, ...updateData };
+    this.transactions.set(id, updated);
+    return updated;
+  }
+
   async getTransactionsByDateRange(startDate: Date, endDate: Date): Promise<TransactionWithDetails[]> {
     const allTransactions = await this.getTransactions();
     return allTransactions.filter(trans => 
@@ -806,67 +816,77 @@ export class DatabaseStorage implements IStorage {
 
   // Transaction methods
   async getTransactions(): Promise<TransactionWithDetails[]> {
-    return db
-      .select({
-        id: transactions.id,
-        type: transactions.type,
-        itemId: transactions.itemId,
-        quantity: transactions.quantity,
-        sourceWarehouseId: transactions.sourceWarehouseId,
-        destinationWarehouseId: transactions.destinationWarehouseId,
-        supplierId: transactions.supplierId,
-        userId: transactions.userId,
-        notes: transactions.notes,
-        transactionDate: transactions.transactionDate,
-        status: transactions.status,
-        createdAt: transactions.createdAt,
-        item: {
-          id: items.id,
-          name: items.name,
-          description: items.description,
-          categoryId: items.categoryId,
-          imageUrl: items.imageUrl,
-          minStockLevel: items.minStockLevel,
-          createdAt: items.createdAt,
-          category: {
-            id: categories.id,
-            name: categories.name,
-            description: categories.description,
-            createdAt: categories.createdAt,
+    try {
+      // Simplified query - build relationships step by step
+      const basicTransactions = await db
+        .select()
+        .from(transactions)
+        .orderBy(desc(transactions.createdAt));
+
+      const result: TransactionWithDetails[] = [];
+
+      for (const transaction of basicTransactions) {
+        // Get item and category
+        const [item] = await db
+          .select()
+          .from(items)
+          .leftJoin(categories, eq(items.categoryId, categories.id))
+          .where(eq(items.id, transaction.itemId));
+
+        // Get user
+        const [user] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, transaction.userId));
+
+        // Get supplier if exists
+        let supplier = null;
+        if (transaction.supplierId) {
+          const [supplierResult] = await db
+            .select()
+            .from(suppliers)
+            .where(eq(suppliers.id, transaction.supplierId));
+          supplier = supplierResult || null;
+        }
+
+        // Get source warehouse if exists
+        let sourceWarehouse = null;
+        if (transaction.sourceWarehouseId) {
+          const [warehouseResult] = await db
+            .select()
+            .from(warehouses)
+            .where(eq(warehouses.id, transaction.sourceWarehouseId));
+          sourceWarehouse = warehouseResult || null;
+        }
+
+        // Get destination warehouse if exists
+        let destinationWarehouse = null;
+        if (transaction.destinationWarehouseId) {
+          const [warehouseResult] = await db
+            .select()
+            .from(warehouses)
+            .where(eq(warehouses.id, transaction.destinationWarehouseId));
+          destinationWarehouse = warehouseResult || null;
+        }
+
+        result.push({
+          ...transaction,
+          item: {
+            ...item.items,
+            category: item.categories || null,
           },
-        },
-        user: {
-          id: users.id,
-          username: users.username,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          email: users.email,
-          role: users.role,
-        },
-        sourceWarehouse: {
-          id: warehouses.id,
-          name: warehouses.name,
-          location: warehouses.location,
-        },
-        destinationWarehouse: {
-          id: warehouses.id,
-          name: warehouses.name,
-          location: warehouses.location,
-        },
-        supplier: {
-          id: suppliers.id,
-          name: suppliers.name,
-          contactPerson: suppliers.contactPerson,
-        },
-      })
-      .from(transactions)
-      .leftJoin(items, eq(transactions.itemId, items.id))
-      .leftJoin(categories, eq(items.categoryId, categories.id))
-      .leftJoin(users, eq(transactions.userId, users.id))
-      .leftJoin(warehouses, eq(transactions.sourceWarehouseId, warehouses.id))
-      .leftJoin(warehouses, eq(transactions.destinationWarehouseId, warehouses.id))
-      .leftJoin(suppliers, eq(transactions.supplierId, suppliers.id))
-      .orderBy(desc(transactions.createdAt));
+          user: user || null,
+          supplier,
+          sourceWarehouse,
+          destinationWarehouse,
+        });
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      throw error;
+    }
   }
 
   async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
@@ -942,6 +962,20 @@ export class DatabaseStorage implements IStorage {
     });
 
     return result;
+  }
+
+  async updateTransaction(id: number, updateData: Partial<InsertTransaction>): Promise<Transaction | undefined> {
+    try {
+      const [transaction] = await db
+        .update(transactions)
+        .set(updateData)
+        .where(eq(transactions.id, id))
+        .returning();
+      return transaction || undefined;
+    } catch (error) {
+      console.error("Error updating transaction:", error);
+      throw error;
+    }
   }
 
   async getTransactionsByDateRange(startDate: Date, endDate: Date): Promise<TransactionWithDetails[]> {
@@ -1234,6 +1268,13 @@ class HybridStorage implements IStorage {
     return this.tryDb(
       () => this.dbStorage.createTransaction(transaction),
       () => this.memStorage.createTransaction(transaction)
+    );
+  }
+
+  async updateTransaction(id: number, transaction: Partial<InsertTransaction>): Promise<Transaction | undefined> {
+    return this.tryDb(
+      () => this.dbStorage.updateTransaction(id, transaction),
+      () => this.memStorage.updateTransaction(id, transaction)
     );
   }
 

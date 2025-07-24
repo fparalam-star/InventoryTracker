@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { TransactionModal } from "@/components/modals/transaction-modal";
 import { TransferModal } from "@/components/modals/transfer-modal";
+import { EditTransactionModal } from "@/components/modals/edit-transaction-modal";
 import { 
   ArrowDown, 
   ArrowUp, 
@@ -30,7 +31,8 @@ import {
   Filter, 
   Plus,
   Calendar,
-  User
+  User,
+  Edit2
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import type { TransactionWithDetails } from "@shared/schema";
@@ -43,6 +45,8 @@ export default function Transactions() {
   const [endDate, setEndDate] = useState("");
   const [transactionModalOpen, setTransactionModalOpen] = useState(false);
   const [transferModalOpen, setTransferModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<TransactionWithDetails | null>(null);
 
   const { data: transactions = [], isLoading } = useQuery<TransactionWithDetails[]>({
     queryKey: ["/api/transactions"],
@@ -230,6 +234,7 @@ export default function Transactions() {
                     <TableHead>المستخدم</TableHead>
                     <TableHead>التاريخ</TableHead>
                     <TableHead>الملاحظات</TableHead>
+                    {user?.role === "admin" && <TableHead>الإجراءات</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -277,6 +282,22 @@ export default function Transactions() {
                           </div>
                         )}
                       </TableCell>
+                      {user?.role === "admin" && (
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedTransaction(transaction);
+                              setEditModalOpen(true);
+                            }}
+                            className="gap-1"
+                          >
+                            <Edit2 size={14} />
+                            تعديل
+                          </Button>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -294,6 +315,12 @@ export default function Transactions() {
       <TransferModal 
         open={transferModalOpen} 
         onOpenChange={setTransferModalOpen} 
+      />
+      
+      <EditTransactionModal 
+        open={editModalOpen} 
+        onOpenChange={setEditModalOpen}
+        transaction={selectedTransaction}
       />
     </div>
   );
