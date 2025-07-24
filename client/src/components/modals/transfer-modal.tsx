@@ -256,6 +256,23 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
 
             <FormField
               control={form.control}
+              name="receiverName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>اسم المستلم</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="أدخل اسم المستلم" 
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="transactionDate"
               render={({ field }) => (
                 <FormItem>

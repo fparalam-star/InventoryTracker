@@ -383,34 +383,7 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
             )}
 
             {transactionType === "outgoing" && (
-              <FormField
-                control={form.control}
-                name="sourceWarehouseId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>المستودع المصدر *</FormLabel>
-                    <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="اختر المستودع" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {warehouses.map((warehouse) => (
-                          <SelectItem key={warehouse.id} value={warehouse.id.toString()}>
-                            {warehouse.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            {transactionType === "transfer" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <>
                 <FormField
                   control={form.control}
                   name="sourceWarehouseId"
@@ -420,7 +393,7 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
                       <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="اختر المصدر" />
+                            <SelectValue placeholder="اختر المستودع" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -435,32 +408,97 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
-                  name="destinationWarehouseId"
+                  name="receiverName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>المستودع الوجهة *</FormLabel>
-                      <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="اختر الوجهة" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {warehouses.map((warehouse) => (
-                            <SelectItem key={warehouse.id} value={warehouse.id.toString()}>
-                              {warehouse.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormLabel>اسم المستلم</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="أدخل اسم المستلم" 
+                          {...field}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
+              </>
+            )}
+
+            {transactionType === "transfer" && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="sourceWarehouseId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>المستودع المصدر *</FormLabel>
+                        <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="اختر المصدر" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {warehouses.map((warehouse) => (
+                              <SelectItem key={warehouse.id} value={warehouse.id.toString()}>
+                                {warehouse.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="destinationWarehouseId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>المستودع الوجهة *</FormLabel>
+                        <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="اختر الوجهة" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {warehouses.map((warehouse) => (
+                              <SelectItem key={warehouse.id} value={warehouse.id.toString()}>
+                                {warehouse.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="receiverName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>اسم المستلم</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="أدخل اسم المستلم" 
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
             )}
 
             {/* Additional Fields */}

@@ -1191,14 +1191,20 @@ export class DatabaseStorage implements IStorage {
       const usersCount = (await db.select().from(users)).length;
       const suppliersCount = (await db.select().from(suppliers)).length;
       
+      // Get low stock items count
+      const lowStockItemsCount = (await this.getLowStockItems()).length;
+      
+      // Get today's transactions count
+      const todayTransactionsCount = (await this.getTodayTransactions()).length;
+      
       return {
         warehouses: warehousesCount,
         categories: categoriesCount,
         items: itemsCount,
         users: usersCount,
         suppliers: suppliersCount,
-        lowStockItems: 0,
-        todayTransactions: 0,
+        lowStockItems: lowStockItemsCount,
+        todayTransactions: todayTransactionsCount,
       };
     } catch (error) {
       console.error('Error fetching dashboard metrics:', error);
