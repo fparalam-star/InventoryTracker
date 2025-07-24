@@ -145,12 +145,13 @@ export default function Reports() {
       case "transactions":
         const transactionData = getFilteredTransactions();
         return {
-          headers: ["التاريخ", "النوع", "العنصر", "الكمية", "المستخدم", "المصدر", "الوجهة", "الملاحظات"],
+          headers: ["التاريخ", "النوع", "العنصر", "الكمية", "اسم المستلم", "المستخدم", "المصدر", "الوجهة", "الملاحظات"],
           rows: transactionData.map(trans => [
             new Date(trans.transactionDate).toLocaleDateString(),
             trans.type,
             trans.item.name,
             trans.quantity.toString(),
+            trans.receiverName || "-",
             `${trans.user.firstName} ${trans.user.lastName}`,
             trans.sourceWarehouse?.name || "-",
             trans.destinationWarehouse?.name || "-",
@@ -288,6 +289,7 @@ export default function Reports() {
                 <TableHead>النوع</TableHead>
                 <TableHead>العنصر</TableHead>
                 <TableHead>الكمية</TableHead>
+                <TableHead>اسم المستلم</TableHead>
                 <TableHead>المستخدم</TableHead>
                 <TableHead>التفاصيل</TableHead>
               </TableRow>
@@ -312,6 +314,7 @@ export default function Reports() {
                     <div className="font-medium">{trans.item.name}</div>
                   </TableCell>
                   <TableCell className="font-medium">{trans.quantity}</TableCell>
+                  <TableCell>{trans.receiverName || "-"}</TableCell>
                   <TableCell>{trans.user.firstName} {trans.user.lastName}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {trans.type === "incoming" && `From ${trans.supplier?.name} to ${trans.destinationWarehouse?.name}`}

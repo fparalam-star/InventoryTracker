@@ -67,6 +67,7 @@ export const transactions = pgTable("transactions", {
   destinationWarehouseId: integer("destination_warehouse_id").references(() => warehouses.id),
   supplierId: integer("supplier_id").references(() => suppliers.id),
   userId: integer("user_id").references(() => users.id).notNull(),
+  receiverName: text("receiver_name"), // اسم المستلم
   notes: text("notes"),
   transactionDate: timestamp("transaction_date").notNull(),
   status: text("status", { enum: ["pending", "approved", "rejected"] }).default("approved").notNull(),

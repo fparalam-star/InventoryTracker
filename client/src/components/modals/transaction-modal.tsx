@@ -44,6 +44,7 @@ const transactionFormSchema = z.object({
   newItemName: z.string().optional(),
   quantity: z.number().min(1, "Quantity must be at least 1"),
   supplierId: z.number().optional(),
+  receiverName: z.string().optional(), // اسم المستلم
   sourceWarehouseId: z.number().optional(),
   destinationWarehouseId: z.number().optional(),
   transactionDate: z.string().min(1, "Transaction date is required"),
@@ -96,6 +97,7 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
       categoryId: 0,
       itemSelectionType: "existing",
       quantity: 1,
+      receiverName: "",
       transactionDate: new Date().toISOString().split('T')[0],
       description: "",
       minStockLevel: 0,
@@ -162,6 +164,7 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
         itemId: itemId,
         quantity: data.quantity,
         supplierId: data.supplierId,
+        receiverName: data.receiverName, // اسم المستلم
         sourceWarehouseId: data.sourceWarehouseId,
         destinationWarehouseId: data.destinationWarehouseId,
         transactionDate: new Date(data.transactionDate),
@@ -330,6 +333,23 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
                           ))}
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="receiverName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>اسم المستلم</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="أدخل اسم المستلم" 
+                          {...field}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
