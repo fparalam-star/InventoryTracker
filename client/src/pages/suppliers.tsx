@@ -25,6 +25,7 @@ import {
 import { Truck, Plus, Phone, Mail, MapPin, User, Edit, Trash2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { insertSupplierSchema, type Supplier } from "@shared/schema";
 
 const supplierFormSchema = insertSupplierSchema;
@@ -33,7 +34,10 @@ export default function Suppliers() {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
+  
+  const isAdmin = user?.role === "admin";
 
   const { data: suppliers = [], isLoading } = useQuery<Supplier[]>({
     queryKey: ["/api/suppliers"],
@@ -115,6 +119,32 @@ export default function Suppliers() {
     });
   };
 
+  const deleteSupplierMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("DELETE", `/api/suppliers/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/suppliers"] });
+      toast({
+        title: "نجح",
+        description: "تم حذف المورد بنجاح",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "خطأ",
+        description: "فشل في حذف المورد",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDelete = (id: number) => {
+    if (confirm("هل أنت متأكد من أنك تريد حذف هذا المورد؟")) {
+      deleteSupplierMutation.mutate(id);
+    }
+  };
+
   const resetForm = () => {
     form.reset();
     setEditingSupplier(null);
@@ -140,16 +170,17 @@ export default function Suppliers() {
           <h1 className="text-3xl font-bold">إدارة الموردين</h1>
           <p className="text-muted-foreground">إدارة الموردين ومعلومات البائعين</p>
         </div>
-        <Dialog open={addModalOpen || !!editingSupplier} onOpenChange={(open) => {
-          if (!open) resetForm();
-          else setAddModalOpen(true);
-        }}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus size={16} className="mr-2" />
-              إضافة مورد
-            </Button>
-          </DialogTrigger>
+        {isAdmin && (
+          <Dialog open={addModalOpen || !!editingSupplier} onOpenChange={(open) => {
+            if (!open) resetForm();
+            else setAddModalOpen(true);
+          }}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus size={16} className="mr-2" />
+                إضافة مورد
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
@@ -180,7 +211,7 @@ export default function Suppliers() {
                     <FormItem>
                       <FormLabel>شخص الاتصال</FormLabel>
                       <FormControl>
-                        <Input placeholder="أدخل اسم شخص الاتصال" {...field} />
+                        <Input placeholder="أدخل اسم شخص الاتصال" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -195,7 +226,7 @@ export default function Suppliers() {
                       <FormItem>
                         <FormLabel>البريد الإلكتروني</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="أدخل عنوان البريد الإلكتروني" {...field} />
+                          <Input type="email" placeholder="أدخل عنوان البريد الإلكتروني" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -209,7 +240,7 @@ export default function Suppliers() {
                       <FormItem>
                         <FormLabel>الهاتف</FormLabel>
                         <FormControl>
-                          <Input type="tel" placeholder="أدخل رقم الهاتف" {...field} />
+                          <Input type="tel" placeholder="أدخل رقم الهاتف" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -228,6 +259,7 @@ export default function Suppliers() {
                           placeholder="أدخل عنوان الشركة" 
                           className="resize-none" 
                           {...field} 
+                          value={field.value || ""}
                         />
                       </FormControl>
                       <FormMessage />
@@ -253,6 +285,7 @@ export default function Suppliers() {
             </Form>
           </DialogContent>
         </Dialog>
+        )}
       </div>
 
       {/* Suppliers Grid */}
@@ -282,15 +315,25 @@ export default function Suppliers() {
                       )}
                     </div>
                   </div>
-                  <div className="flex space-x-1">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleEdit(supplier)}
-                    >
-                      <Edit size={14} />
-                    </Button>
-                  </div>
+                  {isAdmin && (
+                    <div className="flex space-x-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleEdit(supplier)}
+                      >
+                        <Edit size={14} />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleDelete(supplier.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </CardHeader>
               <CardContent>

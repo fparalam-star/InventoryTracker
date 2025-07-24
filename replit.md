@@ -122,6 +122,11 @@ Language: Full Arabic localization requested for entire application interface.
 
 ## Recent Changes
 
+- July 24, 2025: **ROLE-BASED WAREHOUSE AND SUPPLIER MANAGEMENT:** Restricted warehouse and supplier management operations (add, edit, delete) to admin users only
+  - Data entry users can now only view warehouses and suppliers
+  - Admin users maintain full CRUD access to warehouses and suppliers
+  - Add, edit, and delete buttons hidden from data entry users
+  - Complete Arabic language support maintained throughout
 - July 24, 2025: **SIDEBAR REORDERING:** Updated sidebar navigation order to place warehouses immediately after dashboard
   - Reorganized navigation structure for better user experience
   - Warehouses now appear as second menu item for all users

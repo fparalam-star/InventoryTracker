@@ -25,6 +25,7 @@ import {
 import { Building2, Plus, MapPin, Edit, Trash2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { insertWarehouseSchema, type Warehouse } from "@shared/schema";
 
 const warehouseFormSchema = insertWarehouseSchema;
@@ -33,7 +34,10 @@ export default function Warehouses() {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editingWarehouse, setEditingWarehouse] = useState<Warehouse | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
+  
+  const isAdmin = user?.role === "admin";
 
   const { data: warehouses = [], isLoading } = useQuery<Warehouse[]>({
     queryKey: ["/api/warehouses"],
@@ -162,16 +166,17 @@ export default function Warehouses() {
           <h1 className="text-3xl font-bold">إدارة المستودعات</h1>
           <p className="text-muted-foreground">إدارة مواقع وتفاصيل المستودعات الخاصة بك</p>
         </div>
-        <Dialog open={addModalOpen || !!editingWarehouse} onOpenChange={(open) => {
-          if (!open) resetForm();
-          else setAddModalOpen(true);
-        }}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus size={16} className="mr-2" />
-              إضافة مستودع
-            </Button>
-          </DialogTrigger>
+        {isAdmin && (
+          <Dialog open={addModalOpen || !!editingWarehouse} onOpenChange={(open) => {
+            if (!open) resetForm();
+            else setAddModalOpen(true);
+          }}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus size={16} className="mr-2" />
+                إضافة مستودع
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
@@ -246,6 +251,7 @@ export default function Warehouses() {
             </Form>
           </DialogContent>
         </Dialog>
+        )}
       </div>
 
       {/* Warehouses Grid */}
@@ -273,23 +279,25 @@ export default function Warehouses() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex space-x-1">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleEdit(warehouse)}
-                    >
-                      <Edit size={14} />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleDelete(warehouse.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 size={14} />
-                    </Button>
-                  </div>
+                  {isAdmin && (
+                    <div className="flex space-x-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleEdit(warehouse)}
+                      >
+                        <Edit size={14} />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleDelete(warehouse.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </CardHeader>
               <CardContent>
