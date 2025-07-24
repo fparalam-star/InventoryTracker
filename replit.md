@@ -122,6 +122,15 @@ Language: Full Arabic localization requested for entire application interface.
 
 ## Recent Changes
 
+- July 24, 2025: **SIDEBAR REORDERING:** Updated sidebar navigation order to place warehouses immediately after dashboard
+  - Reorganized navigation structure for better user experience
+  - Warehouses now appear as second menu item for all users
+  - Categories moved to third position for admin users only
+- July 24, 2025: **RECEIVER NAME FIELD:** Added receiver name field to outgoing and transfer transaction forms
+  - Added receiverName field to transaction and transfer modals
+  - Field appears under warehouse selection for outgoing transactions (internal usage)  
+  - Field appears under warehouse selection for transfer transactions between warehouses
+  - Maintains Arabic language support throughout
 - July 24, 2025: **CRITICAL INVENTORY FIX:** Fixed inventory quantity not updating when transactions are deleted
   - Added adjustInventoryForDeletedTransaction logic to both DatabaseStorage and MemStorage
   - When deleting transactions, inventory quantities are now properly adjusted based on transaction type

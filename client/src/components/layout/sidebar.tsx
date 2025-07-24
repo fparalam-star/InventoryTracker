@@ -16,11 +16,17 @@ import itiLogo from "@assets/iti_logo_1751453860420.png";
 
 const adminOnlyNavigation = [
   { name: "لوحة التحكم", href: "/", icon: LayoutDashboard },
+];
+
+const warehouseNavigation = [
+  { name: "المستودعات", href: "/warehouses", icon: Building2 },
+];
+
+const adminCategoryNavigation = [
   { name: "الفئات", href: "/categories", icon: Tags },
 ];
 
 const commonNavigation = [
-  { name: "المستودعات", href: "/warehouses", icon: Building2 },
   { name: "الموردين", href: "/suppliers", icon: Truck },
   { name: "المعاملات", href: "/transactions", icon: ArrowLeftRight },
   { name: "التقارير", href: "/reports", icon: FileBarChart },
@@ -54,6 +60,48 @@ export function Sidebar() {
         <ul className="space-y-2 px-4">
           {/* Admin Only Navigation */}
           {user?.role === "admin" && adminOnlyNavigation.map((item) => {
+            const Icon = item.icon;
+            const isActive = location === item.href;
+            return (
+              <li key={item.name}>
+                <Link href={item.href}>
+                  <a className={cn(
+                    "flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors",
+                    isActive
+                      ? "text-sidebar-primary bg-sidebar-primary/10"
+                      : "text-sidebar-foreground hover:text-sidebar-primary hover:bg-sidebar-accent"
+                  )}>
+                    <Icon size={20} />
+                    <span className={isActive ? "font-medium" : ""}>{item.name}</span>
+                  </a>
+                </Link>
+              </li>
+            );
+          })}
+          
+          {/* Warehouses Navigation (for all users, right after dashboard) */}
+          {warehouseNavigation.map((item) => {
+            const Icon = item.icon;
+            const isActive = location === item.href;
+            return (
+              <li key={item.name}>
+                <Link href={item.href}>
+                  <a className={cn(
+                    "flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors",
+                    isActive
+                      ? "text-sidebar-primary bg-sidebar-primary/10"
+                      : "text-sidebar-foreground hover:text-sidebar-primary hover:bg-sidebar-accent"
+                  )}>
+                    <Icon size={20} />
+                    <span className={isActive ? "font-medium" : ""}>{item.name}</span>
+                  </a>
+                </Link>
+              </li>
+            );
+          })}
+
+          {/* Admin Categories Navigation */}
+          {user?.role === "admin" && adminCategoryNavigation.map((item) => {
             const Icon = item.icon;
             const isActive = location === item.href;
             return (
