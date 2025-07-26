@@ -20,7 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await apiRequest("POST", "/api/auth/login", { username, password });
       const userData = await response.json();
       setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("currentUser", JSON.stringify(userData));
     } catch (error) {
       throw new Error("Invalid credentials");
     }
@@ -28,16 +28,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("user");
+    localStorage.removeItem("currentUser");
   };
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+    const storedUser = localStorage.getItem("currentUser");
     if (storedUser) {
       try {
         setUser(JSON.parse(storedUser));
       } catch (error) {
-        localStorage.removeItem("user");
+        localStorage.removeItem("currentUser");
       }
     }
     setIsLoading(false);

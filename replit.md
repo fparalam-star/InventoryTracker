@@ -122,6 +122,13 @@ Language: Full Arabic localization requested for entire application interface.
 
 ## Recent Changes
 
+- July 26, 2025: **SUPER ADMIN PRIVILEGES:** Implemented exclusive privileges for main admin user (username: "admin")
+  - Added password visibility column in user management table (only visible to main admin)
+  - Added password show/hide toggle buttons for each user
+  - Added user deletion functionality (main admin can delete any user except themselves)
+  - Enhanced API endpoints to send password data only to main admin user
+  - Updated authentication system to properly identify main admin privileges
+  - Complete Arabic language support maintained throughout all new features
 - July 24, 2025: **ROLE-BASED WAREHOUSE AND SUPPLIER MANAGEMENT:** Restricted warehouse and supplier management operations (add, edit, delete) to admin users only
   - Data entry users can now only view warehouses and suppliers
   - Admin users maintain full CRUD access to warehouses and suppliers
