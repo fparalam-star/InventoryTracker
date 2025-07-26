@@ -12,9 +12,29 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  // Get current user info from localStorage if available
+  const currentUser = localStorage.getItem('currentUser');
+  let userId = null;
+  if (currentUser) {
+    try {
+      const user = JSON.parse(currentUser);
+      userId = user.id;
+    } catch (e) {
+      // Ignore parsing errors
+    }
+  }
+
+  const headers: Record<string, string> = {};
+  if (data) {
+    headers["Content-Type"] = "application/json";
+  }
+  if (userId) {
+    headers["x-user-id"] = userId.toString();
+  }
+
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
@@ -29,8 +49,26 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    // Get current user info from localStorage if available
+    const currentUser = localStorage.getItem('currentUser');
+    let userId = null;
+    if (currentUser) {
+      try {
+        const user = JSON.parse(currentUser);
+        userId = user.id;
+      } catch (e) {
+        // Ignore parsing errors
+      }
+    }
+
+    const headers: Record<string, string> = {};
+    if (userId) {
+      headers["x-user-id"] = userId.toString();
+    }
+
     const res = await fetch(queryKey[0] as string, {
       credentials: "include",
+      headers,
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {

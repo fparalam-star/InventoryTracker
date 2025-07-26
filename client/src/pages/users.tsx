@@ -37,7 +37,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Users as UsersIcon, Plus, Mail, Shield, User } from "lucide-react";
+import { Users as UsersIcon, Plus, Mail, Shield, User, Trash2, Eye, EyeOff } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
@@ -47,9 +47,12 @@ const userFormSchema = insertUserSchema;
 
 export default function Users() {
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(new Set());
   const { user: currentUser } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  const isMainAdmin = currentUser?.username === "admin";
 
   // Only allow admin users to access this page
   if (currentUser?.role !== "admin") {
@@ -57,13 +60,13 @@ export default function Users() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <Shield className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">Access denied. Admin privileges required.</p>
+          <p className="text-muted-foreground">تم رفض الوصول. يتطلب صلاحيات المدير.</p>
         </div>
       </div>
     );
   }
 
-  const { data: users = [], isLoading } = useQuery<Omit<UserType, 'password'>[]>({
+  const { data: users = [], isLoading } = useQuery<UserType[]>({
     queryKey: ["/api/users"],
   });
 
@@ -93,16 +96,36 @@ export default function Users() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
       toast({
-        title: "Success",
-        description: "User created successfully",
+        title: "نجح",
+        description: "تم إنشاء المستخدم بنجاح",
       });
       form.reset();
       setAddModalOpen(false);
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "Failed to create user",
+        title: "خطأ",
+        description: "فشل في إنشاء المستخدم",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("DELETE", `/api/users/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      toast({
+        title: "نجح",
+        description: "تم حذف المستخدم بنجاح",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ",
+        description: error.message || "فشل في حذف المستخدم",
         variant: "destructive",
       });
     },
@@ -117,12 +140,30 @@ export default function Users() {
     setAddModalOpen(false);
   };
 
+  const togglePasswordVisibility = (userId: number) => {
+    setVisiblePasswords(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(userId)) {
+        newSet.delete(userId);
+      } else {
+        newSet.add(userId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleDeleteUser = (user: UserType) => {
+    if (confirm(`هل أنت متأكد من أنك تريد حذف المستخدم "${user.firstName} ${user.lastName}"؟`)) {
+      deleteUserMutation.mutate(user.id);
+    }
+  };
+
   const getRoleBadge = (role: string) => {
     switch (role) {
       case "admin":
-        return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-100">Admin</Badge>;
+        return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-100">مدير</Badge>;
       case "data_entry":
-        return <Badge variant="secondary">Data Entry</Badge>;
+        return <Badge variant="secondary">مدخل بيانات</Badge>;
       default:
         return <Badge variant="outline">{role}</Badge>;
     }
@@ -137,7 +178,7 @@ export default function Users() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading users...</p>
+          <p className="mt-2 text-muted-foreground">جاري تحميل المستخدمين...</p>
         </div>
       </div>
     );
@@ -148,19 +189,19 @@ export default function Users() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">User Management</h1>
-          <p className="text-muted-foreground">Manage user accounts and permissions</p>
+          <h1 className="text-3xl font-bold">إدارة المستخدمين</h1>
+          <p className="text-muted-foreground">إدارة حسابات المستخدمين والصلاحيات</p>
         </div>
         <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus size={16} className="mr-2" />
-              Add User
+              إضافة مستخدم
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New User</DialogTitle>
+              <DialogTitle>إضافة مستخدم جديد</DialogTitle>
             </DialogHeader>
             
             <Form {...form}>
@@ -171,9 +212,9 @@ export default function Users() {
                     name="firstName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>First Name *</FormLabel>
+                        <FormLabel>الاسم الأول *</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter first name" {...field} />
+                          <Input placeholder="أدخل الاسم الأول" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -185,9 +226,9 @@ export default function Users() {
                     name="lastName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Last Name *</FormLabel>
+                        <FormLabel>الاسم الأخير *</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter last name" {...field} />
+                          <Input placeholder="أدخل الاسم الأخير" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -200,9 +241,9 @@ export default function Users() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email Address *</FormLabel>
+                      <FormLabel>البريد الإلكتروني *</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="Enter email address" {...field} />
+                        <Input type="email" placeholder="أدخل البريد الإلكتروني" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -214,9 +255,9 @@ export default function Users() {
                   name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Username *</FormLabel>
+                      <FormLabel>اسم المستخدم *</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter username" {...field} />
+                        <Input placeholder="أدخل اسم المستخدم" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -228,9 +269,9 @@ export default function Users() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password *</FormLabel>
+                      <FormLabel>كلمة المرور *</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="Enter password" {...field} />
+                        <Input type="password" placeholder="أدخل كلمة المرور" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -242,10 +283,10 @@ export default function Users() {
                   name="mobileNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Mobile Number</FormLabel>
+                      <FormLabel>رقم الهاتف</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="Enter mobile number" 
+                          placeholder="أدخل رقم الهاتف" 
                           {...field}
                           value={field.value || ""}
                         />
@@ -260,16 +301,16 @@ export default function Users() {
                   name="role"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Role *</FormLabel>
+                      <FormLabel>الدور *</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select user role" />
+                            <SelectValue placeholder="اختر دور المستخدم" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="data_entry">Data Entry</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="data_entry">مدخل بيانات</SelectItem>
+                          <SelectItem value="admin">مدير</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -282,18 +323,18 @@ export default function Users() {
                   name="assignedWarehouseId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Assigned Warehouse</FormLabel>
+                      <FormLabel>المخزون المُخصص</FormLabel>
                       <Select 
                         onValueChange={(value) => field.onChange(value === "none" ? undefined : parseInt(value))} 
                         defaultValue={field.value?.toString() || "none"}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select warehouse (optional)" />
+                            <SelectValue placeholder="اختر المخزون (اختياري)" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="none">No assignment</SelectItem>
+                          <SelectItem value="none">بدون تخصيص</SelectItem>
                           {warehouses.map((warehouse) => (
                             <SelectItem key={warehouse.id} value={warehouse.id.toString()}>
                               {warehouse.name} - {warehouse.location}
@@ -308,10 +349,10 @@ export default function Users() {
 
                 <div className="flex items-center justify-end space-x-4 pt-4">
                   <Button type="button" variant="outline" onClick={resetForm}>
-                    Cancel
+                    إلغاء
                   </Button>
                   <Button type="submit" disabled={createUserMutation.isPending}>
-                    {createUserMutation.isPending ? "Creating..." : "Create User"}
+                    {createUserMutation.isPending ? "جاري الإنشاء..." : "إنشاء مستخدم"}
                   </Button>
                 </div>
               </form>
@@ -326,7 +367,7 @@ export default function Users() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Users</p>
+                <p className="text-sm text-muted-foreground">إجمالي المستخدمين</p>
                 <p className="text-2xl font-bold">{users.length}</p>
               </div>
               <UsersIcon className="text-blue-600" size={24} />
@@ -338,7 +379,7 @@ export default function Users() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Admin Users</p>
+                <p className="text-sm text-muted-foreground">المديرون</p>
                 <p className="text-2xl font-bold">{users.filter(u => u.role === "admin").length}</p>
               </div>
               <Shield className="text-purple-600" size={24} />
@@ -350,7 +391,7 @@ export default function Users() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Data Entry Users</p>
+                <p className="text-sm text-muted-foreground">مدخلو البيانات</p>
                 <p className="text-2xl font-bold">{users.filter(u => u.role === "data_entry").length}</p>
               </div>
               <User className="text-green-600" size={24} />
@@ -362,25 +403,27 @@ export default function Users() {
       {/* Users Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Users</CardTitle>
+          <CardTitle>جميع المستخدمين</CardTitle>
         </CardHeader>
         <CardContent>
           {users.length === 0 ? (
             <div className="text-center py-8">
               <UsersIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">No users found</p>
+              <p className="text-muted-foreground">لا يوجد مستخدمون</p>
             </div>
           ) : (
             <div className="overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Username</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>المستخدم</TableHead>
+                    <TableHead>اسم المستخدم</TableHead>
+                    <TableHead>البريد الإلكتروني</TableHead>
+                    {isMainAdmin && <TableHead>كلمة المرور</TableHead>}
+                    <TableHead>الدور</TableHead>
+                    <TableHead>تاريخ الإنشاء</TableHead>
+                    <TableHead>الحالة</TableHead>
+                    {isMainAdmin && <TableHead>إجراءات</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -396,7 +439,7 @@ export default function Users() {
                           <div>
                             <div className="font-medium">{user.firstName} {user.lastName}</div>
                             {user.id === currentUser?.id && (
-                              <div className="text-xs text-muted-foreground">(You)</div>
+                              <div className="text-xs text-muted-foreground">(أنت)</div>
                             )}
                           </div>
                         </div>
@@ -408,13 +451,47 @@ export default function Users() {
                           <span>{user.email}</span>
                         </div>
                       </TableCell>
+                      {isMainAdmin && (
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <span className="font-mono text-sm">
+                              {visiblePasswords.has(user.id) ? user.password : "••••••••"}
+                            </span>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => togglePasswordVisibility(user.id)}
+                              className="h-6 w-6 p-0"
+                            >
+                              {visiblePasswords.has(user.id) ? 
+                                <EyeOff size={12} /> : 
+                                <Eye size={12} />
+                              }
+                            </Button>
+                          </div>
+                        </TableCell>
+                      )}
                       <TableCell>{getRoleBadge(user.role)}</TableCell>
                       <TableCell>
                         {new Date(user.createdAt).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="default">Active</Badge>
+                        <Badge variant="default">نشط</Badge>
                       </TableCell>
+                      {isMainAdmin && (
+                        <TableCell>
+                          {user.id !== currentUser?.id && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDeleteUser(user)}
+                              className="text-destructive hover:text-destructive h-8 w-8 p-0"
+                            >
+                              <Trash2 size={14} />
+                            </Button>
+                          )}
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                 </TableBody>

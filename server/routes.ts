@@ -50,9 +50,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/users", async (req, res) => {
     try {
       const users = await storage.getUsers();
-      // Remove passwords from response
-      const safeUsers = users.map(({ password, ...user }) => user);
-      res.json(safeUsers);
+      const requestingUser = req.headers['x-user-id'] ? await storage.getUser(parseInt(req.headers['x-user-id'] as string)) : null;
+      
+      // Only show passwords to the main admin (username: "admin")
+      if (requestingUser?.username === "admin") {
+        res.json(users);
+      } else {
+        // Remove passwords from response for other users
+        const safeUsers = users.map(({ password, ...user }) => user);
+        res.json(safeUsers);
+      }
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch users" });
     }
@@ -76,10 +83,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      const { password, ...safeUser } = user;
-      res.json(safeUser);
+      
+      const requestingUser = req.headers['x-user-id'] ? await storage.getUser(parseInt(req.headers['x-user-id'] as string)) : null;
+      
+      // Only show password to the main admin (username: "admin")
+      if (requestingUser?.username === "admin") {
+        res.json(user);
+      } else {
+        const { password, ...safeUser } = user;
+        res.json(safeUser);
+      }
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Delete user (only main admin can delete users)
+  app.delete("/api/users/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const requestingUser = req.headers['x-user-id'] ? await storage.getUser(parseInt(req.headers['x-user-id'] as string)) : null;
+      
+      // Only allow main admin to delete users
+      if (requestingUser?.username !== "admin") {
+        return res.status(403).json({ message: "Only main admin can delete users" });
+      }
+      
+      // Prevent admin from deleting themselves
+      if (id === requestingUser.id) {
+        return res.status(400).json({ message: "Cannot delete your own account" });
+      }
+      
+      const success = await storage.deleteUser(id);
+      if (!success) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete user" });
     }
   });
 
