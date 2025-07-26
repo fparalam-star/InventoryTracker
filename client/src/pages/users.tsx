@@ -70,10 +70,7 @@ export default function Users() {
     queryKey: ["/api/users"],
   });
 
-  // Debug logging
-  console.log("Users data received:", users);
-  console.log("Current user:", currentUser);
-  console.log("Is main admin:", isMainAdmin);
+
 
   const { data: warehouses = [] } = useQuery<Warehouse[]>({
     queryKey: ["/api/warehouses"],
@@ -158,8 +155,6 @@ export default function Users() {
   };
 
   const handleDeleteUser = (user: UserType) => {
-    console.log("Attempting to delete user:", user);
-    console.log("Current user for deletion:", currentUser);
     if (confirm(`هل أنت متأكد من أنك تريد حذف المستخدم "${user.firstName} ${user.lastName}"؟`)) {
       deleteUserMutation.mutate(user.id);
     }
