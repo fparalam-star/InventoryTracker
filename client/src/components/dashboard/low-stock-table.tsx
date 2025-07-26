@@ -9,14 +9,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Package } from "lucide-react";
+import { Package, Plus, ArrowUpDown } from "lucide-react";
 import type { InventoryWithDetails } from "@shared/schema";
 
 interface LowStockTableProps {
   lowStockItems: InventoryWithDetails[];
+  onReorder: (item: InventoryWithDetails) => void;
+  onTransfer: (item: InventoryWithDetails) => void;
 }
 
-export function LowStockTable({ lowStockItems }: LowStockTableProps) {
+export function LowStockTable({ lowStockItems, onReorder, onTransfer }: LowStockTableProps) {
   const getStockBadgeVariant = (current: number, min: number) => {
     if (current === 0) return "destructive";
     if (current <= min / 2) return "destructive";
@@ -73,11 +75,23 @@ export function LowStockTable({ lowStockItems }: LowStockTableProps) {
                     <TableCell className="text-sm">{item.item.minStockLevel}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
-                        <Button size="sm" variant="outline">
-                          Reorder
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => onReorder(item)}
+                          className="flex items-center gap-1"
+                        >
+                          <Plus size={14} />
+                          إعادة طلب
                         </Button>
-                        <Button size="sm" variant="outline">
-                          Transfer
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => onTransfer(item)}
+                          className="flex items-center gap-1"
+                        >
+                          <ArrowUpDown size={14} />
+                          نقل
                         </Button>
                       </div>
                     </TableCell>

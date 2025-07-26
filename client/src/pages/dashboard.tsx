@@ -20,6 +20,16 @@ import {
   BarChart3,
   UserPlus
 } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend
+} from "recharts";
 import type { 
   DashboardMetrics, 
   TransactionWithDetails, 
@@ -30,6 +40,8 @@ export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [transactionModalOpen, setTransactionModalOpen] = useState(false);
   const [transferModalOpen, setTransferModalOpen] = useState(false);
+  const [selectedItemForReorder, setSelectedItemForReorder] = useState<InventoryWithDetails | null>(null);
+  const [selectedItemForTransfer, setSelectedItemForTransfer] = useState<InventoryWithDetails | null>(null);
 
   // Fetch dashboard data
   const { data: metrics, isLoading: metricsLoading } = useQuery<DashboardMetrics>({
@@ -43,6 +55,42 @@ export default function Dashboard() {
   const { data: lowStockItems = [], isLoading: lowStockLoading } = useQuery<InventoryWithDetails[]>({
     queryKey: ["/api/dashboard/low-stock"],
   });
+
+  const { data: inventoryData = [] } = useQuery<InventoryWithDetails[]>({
+    queryKey: ["/api/inventory"],
+  });
+
+  // Handle reorder action
+  const handleReorder = (item: InventoryWithDetails) => {
+    setSelectedItemForReorder(item);
+    setTransactionModalOpen(true);
+  };
+
+  // Handle transfer action
+  const handleTransfer = (item: InventoryWithDetails) => {
+    setSelectedItemForTransfer(item);
+    setTransferModalOpen(true);
+  };
+
+  // Prepare chart data
+  const chartData = inventoryData
+    .reduce((acc: any[], item) => {
+      const existingWarehouse = acc.find(w => w.warehouse === item.warehouse.name);
+      if (existingWarehouse) {
+        existingWarehouse.items += 1;
+        existingWarehouse.quantity += item.quantity;
+        existingWarehouse.lowStock += item.quantity <= item.item.minStockLevel ? 1 : 0;
+      } else {
+        acc.push({
+          warehouse: item.warehouse.name,
+          items: 1,
+          quantity: item.quantity,
+          lowStock: item.quantity <= item.item.minStockLevel ? 1 : 0,
+        });
+      }
+      return acc;
+    }, [])
+    .slice(0, 8); // Show top 8 warehouses
 
   if (metricsLoading) {
     return (
@@ -153,22 +201,57 @@ export default function Dashboard() {
           activities={activitiesLoading ? [] : recentActivities} 
         />
         
-        {/* Placeholder for future chart */}
+        {/* Inventory Levels Chart */}
         <div className="bg-card rounded-xl shadow-sm border p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold">مستويات المخزون</h3>
-            <select className="text-sm border border-input rounded-lg px-3 py-1">
-              <option>آخر 7 أيام</option>
-              <option>آخر 30 يوم</option>
-              <option>آخر 3 شهور</option>
-            </select>
-          </div>
-          <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
-            <div className="text-center text-muted-foreground">
-              <BarChart3 size={48} className="mx-auto mb-4" />
-              <p>مخطط بياني</p>
-              <p className="text-sm">قريباً</p>
+            <h3 className="text-lg font-semibold">مستويات المخزون حسب المستودع</h3>
+            <div className="flex items-center space-x-2">
+              <BarChart3 className="text-primary" size={20} />
+              <span className="text-sm text-muted-foreground">المخزون الحالي</span>
             </div>
+          </div>
+          <div className="h-64">
+            {chartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="warehouse" 
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                    fontSize={12}
+                  />
+                  <YAxis fontSize={12} />
+                  <Tooltip 
+                    formatter={(value, name) => [
+                      value,
+                      name === 'quantity' ? 'إجمالي الكمية' : 
+                      name === 'items' ? 'عدد العناصر' :
+                      'عناصر منخفضة المخزون'
+                    ]}
+                    labelFormatter={(label) => `المستودع: ${label}`}
+                  />
+                  <Legend 
+                    formatter={(value) => 
+                      value === 'quantity' ? 'إجمالي الكمية' : 
+                      value === 'items' ? 'عدد العناصر' :
+                      'عناصر منخفضة المخزون'
+                    }
+                  />
+                  <Bar dataKey="quantity" fill="#3b82f6" name="quantity" />
+                  <Bar dataKey="lowStock" fill="#ef4444" name="lowStock" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full bg-muted rounded-lg flex items-center justify-center">
+                <div className="text-center text-muted-foreground">
+                  <BarChart3 size={48} className="mx-auto mb-4" />
+                  <p>لا توجد بيانات مخزون</p>
+                  <p className="text-sm">قم بإضافة عناصر للمستودعات لعرض المخطط</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -217,7 +300,11 @@ export default function Dashboard() {
       </div>
 
       {/* Low Stock Alerts */}
-      <LowStockTable lowStockItems={lowStockLoading ? [] : lowStockItems} />
+      <LowStockTable 
+        lowStockItems={lowStockLoading ? [] : lowStockItems}
+        onReorder={handleReorder}
+        onTransfer={handleTransfer}
+      />
 
       {/* Modals */}
       <TransactionModal 
