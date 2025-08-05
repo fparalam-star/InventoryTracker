@@ -122,6 +122,16 @@ Language: Full Arabic localization requested for entire application interface.
 
 ## Recent Changes
 
+- August 05, 2025: **TRANSACTION REPORTS FIX:** Fixed supplier names not appearing in transaction history reports
+  - Updated reports.tsx to correctly display supplier names in "المصدر" (Source) column for incoming transactions
+  - Fixed CSV export to show supplier names instead of warehouse names for incoming transactions from suppliers
+  - Converted transaction type display to Arabic in CSV exports (وارد/صادر/تحويل)
+  - Added fallback text "مورد غير معروف" for incoming transactions without supplier information
+- August 05, 2025: **DASHBOARD ENHANCEMENTS:** Fixed non-working buttons and added stock level chart
+  - Fixed "إعادة طلب" (Reorder) and "نقل" (Transfer) buttons in low stock alerts table
+  - Added functional inventory levels chart using Recharts showing warehouse stock data and low stock indicators
+  - Reorder button opens transaction modal, Transfer button opens transfer modal for low stock items
+  - Stock level visualization displays total quantity per warehouse and low stock item counts
 - July 26, 2025: **SUPER ADMIN PRIVILEGES:** Implemented exclusive privileges for main admin user (username: "admin")
   - Added password visibility column in user management table (only visible to main admin)
   - Added password show/hide toggle buttons for each user

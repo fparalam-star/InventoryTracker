@@ -148,12 +148,12 @@ export default function Reports() {
           headers: ["التاريخ", "النوع", "العنصر", "الكمية", "اسم المستلم", "المستخدم", "المصدر", "الوجهة", "الملاحظات"],
           rows: transactionData.map(trans => [
             new Date(trans.transactionDate).toLocaleDateString(),
-            trans.type,
+            trans.type === "incoming" ? "وارد" : trans.type === "outgoing" ? "صادر" : "تحويل",
             trans.item.name,
             trans.quantity.toString(),
             trans.receiverName || "-",
             `${trans.user.firstName} ${trans.user.lastName}`,
-            trans.sourceWarehouse?.name || "-",
+            trans.type === "incoming" ? (trans.supplier?.name || "مورد غير معروف") : (trans.sourceWarehouse?.name || "-"),
             trans.destinationWarehouse?.name || "-",
             trans.notes || "-"
           ])
@@ -317,9 +317,9 @@ export default function Reports() {
                   <TableCell>{trans.receiverName || "-"}</TableCell>
                   <TableCell>{trans.user.firstName} {trans.user.lastName}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {trans.type === "incoming" && `From ${trans.supplier?.name} to ${trans.destinationWarehouse?.name}`}
-                    {trans.type === "outgoing" && `From ${trans.sourceWarehouse?.name}`}
-                    {trans.type === "transfer" && `${trans.sourceWarehouse?.name} → ${trans.destinationWarehouse?.name}`}
+                    {trans.type === "incoming" && `من ${trans.supplier?.name || "مورد غير معروف"} إلى ${trans.destinationWarehouse?.name}`}
+                    {trans.type === "outgoing" && `من ${trans.sourceWarehouse?.name} للاستخدام الداخلي`}
+                    {trans.type === "transfer" && `من ${trans.sourceWarehouse?.name} إلى ${trans.destinationWarehouse?.name}`}
                   </TableCell>
                 </TableRow>
               ))}
