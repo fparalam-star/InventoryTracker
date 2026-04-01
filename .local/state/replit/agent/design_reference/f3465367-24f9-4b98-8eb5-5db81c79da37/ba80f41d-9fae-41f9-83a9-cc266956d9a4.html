@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITI Inventory Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1976d2',
+                        secondary: '#424242',
+                        success: '#4caf50',
+                        warning: '#ff9800',
+                        error: '#f44336'
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- @COMPONENT: Sidebar Navigation [role-based access, collapsible] -->
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div class="w-64 bg-white shadow-lg border-r border-gray-200 fixed h-full z-10" id="sidebar">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                        <i class="fas fa-warehouse text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-semibold text-gray-900">ITI Inventory</h1>
+                        <p class="text-sm text-gray-500" data-bind="user.role">Admin User</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="mt-6">
+                <ul class="space-y-2 px-4">
+                    <li>
+                        <a href="#dashboard" class="flex items-center space-x-3 text-primary bg-blue-50 px-4 py-3 rounded-lg transition-colors">
+                            <i class="fas fa-chart-dashboard w-5"></i>
+                            <span class="font-medium">Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#inventory" class="flex items-center space-x-3 text-gray-700 hover:text-primary hover:bg-gray-50 px-4 py-3 rounded-lg transition-colors">
+                            <i class="fas fa-boxes w-5"></i>
+                            <span>Inventory</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#warehouses" class="flex items-center space-x-3 text-gray-700 hover:text-primary hover:bg-gray-50 px-4 py-3 rounded-lg transition-colors">
+                            <i class="fas fa-warehouse w-5"></i>
+                            <span>Warehouses</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#suppliers" class="flex items-center space-x-3 text-gray-700 hover:text-primary hover:bg-gray-50 px-4 py-3 rounded-lg transition-colors">
+                            <i class="fas fa-truck w-5"></i>
+                            <span>Suppliers</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#transactions" class="flex items-center space-x-3 text-gray-700 hover:text-primary hover:bg-gray-50 px-4 py-3 rounded-lg transition-colors">
+                            <i class="fas fa-exchange-alt w-5"></i>
+                            <span>Transactions</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#reports" class="flex items-center space-x-3 text-gray-700 hover:text-primary hover:bg-gray-50 px-4 py-3 rounded-lg transition-colors">
+                            <i class="fas fa-chart-bar w-5"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                    <!-- @FUNCTIONALITY: Admin-only section, hide for data entry users -->
+                    <li class="pt-4 border-t border-gray-200" data-role-required="admin">
+                        <a href="#users" class="flex items-center space-x-3 text-gray-700 hover:text-primary hover:bg-gray-50 px-4 py-3 rounded-lg transition-colors">
+                            <i class="fas fa-users w-5"></i>
+                            <span>User Management</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        <!-- @END_COMPONENT: Sidebar Navigation -->
+
+        <!-- Main Content -->
+        <div class="ml-64 flex-1 flex flex-col overflow-hidden">
+            <!-- @COMPONENT: TopBar [user profile, notifications, search] -->
+            <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <button class="lg:hidden text-gray-600">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <h2 class="text-2xl font-semibold text-gray-900">Dashboard</h2>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Search -->
+                        <div class="relative hidden md:block">
+                            <input type="text" placeholder="Search inventory..." class="w-64 px-4 py-2 pl-10 pr-4 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                        
+                        <!-- Notifications -->
+                        <button class="relative p-2 text-gray-600 hover:text-primary transition-colors">
+                            <i class="fas fa-bell text-lg"></i>
+                            <span class="absolute -top-1 -right-1 w-4 h-4 bg-error text-white text-xs rounded-full flex items-center justify-center">3</span>
+                        </button>
+                        
+                        <!-- User Menu -->
+                        <div class="relative">
+                            <button class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                                <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                                    <span class="text-white text-sm font-medium" data-bind="user.initials">JD</span>
+                                </div>
+                                <span class="hidden md:block text-sm font-medium text-gray-700" data-bind="user.name">John Doe</span>
+                                <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <!-- @END_COMPONENT: TopBar -->
+
+            <!-- @COMPONENT: Dashboard Content [metrics cards, charts, recent activity] -->
+            <main class="flex-1 overflow-y-auto p-6">
+                <!-- Dashboard Metrics -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Total Warehouses</p>
+                                <p class="text-3xl font-bold text-gray-900" data-bind="metrics.warehouses">8</p>
+                                <p class="text-sm text-success mt-2">
+                                    <i class="fas fa-arrow-up text-xs"></i>
+                                    <span>12% from last month</span>
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-warehouse text-primary text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Total Categories</p>
+                                <p class="text-3xl font-bold text-gray-900" data-bind="metrics.categories">24</p>
+                                <p class="text-sm text-success mt-2">
+                                    <i class="fas fa-arrow-up text-xs"></i>
+                                    <span>8% from last month</span>
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-tags text-success text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Total Items</p>
+                                <p class="text-3xl font-bold text-gray-900" data-bind="metrics.items">1,847</p>
+                                <p class="text-sm text-warning mt-2">
+                                    <i class="fas fa-arrow-down text-xs"></i>
+                                    <span>3% from last month</span>
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-boxes text-warning text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Total Users</p>
+                                <p class="text-3xl font-bold text-gray-900" data-bind="metrics.users">12</p>
+                                <p class="text-sm text-success mt-2">
+                                    <i class="fas fa-arrow-up text-xs"></i>
+                                    <span>2 new this month</span>
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-purple-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Metrics Row -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Total Suppliers</p>
+                                <p class="text-2xl font-bold text-gray-900" data-bind="metrics.suppliers">47</p>
+                            </div>
+                            <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-truck text-indigo-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Low Stock Items</p>
+                                <p class="text-2xl font-bold text-error" data-bind="metrics.lowStock">23</p>
+                            </div>
+                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-exclamation-triangle text-error"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Today's Transactions</p>
+                                <p class="text-2xl font-bold text-gray-900" data-bind="metrics.todayTransactions">156</p>
+                            </div>
+                            <div class="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-exchange-alt text-teal-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts and Recent Activity -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- @COMPONENT: Inventory Chart [data visualization] -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900">Inventory Levels</h3>
+                            <select class="text-sm border border-gray-300 rounded-lg px-3 py-1 focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <option>Last 7 days</option>
+                                <option>Last 30 days</option>
+                                <option>Last 3 months</option>
+                            </select>
+                        </div>
+                        <!-- @FUNCTIONALITY: Implement chart library (Chart.js, D3.js) for inventory visualization -->
+                        <div class="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+                            <div class="text-center text-gray-500">
+                                <i class="fas fa-chart-line text-4xl mb-4"></i>
+                                <p>Inventory Chart Visualization</p>
+                                <p class="text-sm"><!-- TODO: Implement Chart.js integration --></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- @COMPONENT: Recent Activity Feed [transaction history] -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
+                            <a href="#" class="text-primary text-sm hover:underline">View All</a>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <!-- @MAP: recentActivities.map(activity => ( -->
+                            <div class="flex items-start space-x-3" data-mock="true">
+                                <div class="w-8 h-8 bg-success rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-plus text-white text-xs"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900">Item Added to Inventory</p>
+                                    <p class="text-sm text-gray-600">Dell Laptop added to Main Warehouse (Qty: 5)</p>
+                                    <p class="text-xs text-gray-400 mt-1">2 hours ago</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-3" data-mock="true">
+                                <div class="w-8 h-8 bg-warning rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-exchange-alt text-white text-xs"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900">Item Transfer</p>
+                                    <p class="text-sm text-gray-600">Office Chairs transferred from Main to Branch A (Qty: 10)</p>
+                                    <p class="text-xs text-gray-400 mt-1">4 hours ago</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-3" data-mock="true">
+                                <div class="w-8 h-8 bg-error rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-minus text-white text-xs"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900">Item Used Internally</p>
+                                    <p class="text-sm text-gray-600">Printer Paper removed for office use (Qty: 3)</p>
+                                    <p class="text-xs text-gray-400 mt-1">6 hours ago</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-3" data-mock="true">
+                                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-user-plus text-white text-xs"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900">New User Added</p>
+                                    <p class="text-sm text-gray-600">Sarah Johnson added as Data Entry user</p>
+                                    <p class="text-xs text-gray-400 mt-1">1 day ago</p>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions Section -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-6">Quick Actions</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <button class="p-4 border-2 border-dashed border-primary rounded-lg hover:bg-blue-50 transition-colors text-center group" data-action="add-item">
+                            <i class="fas fa-plus text-primary text-2xl mb-3 group-hover:scale-110 transition-transform"></i>
+                            <p class="text-sm font-medium text-primary">Add New Item</p>
+                        </button>
+
+                        <button class="p-4 border-2 border-dashed border-success rounded-lg hover:bg-green-50 transition-colors text-center group" data-action="transfer-item">
+                            <i class="fas fa-exchange-alt text-success text-2xl mb-3 group-hover:scale-110 transition-transform"></i>
+                            <p class="text-sm font-medium text-success">Transfer Items</p>
+                        </button>
+
+                        <button class="p-4 border-2 border-dashed border-warning rounded-lg hover:bg-orange-50 transition-colors text-center group" data-action="generate-report">
+                            <i class="fas fa-chart-bar text-warning text-2xl mb-3 group-hover:scale-110 transition-transform"></i>
+                            <p class="text-sm font-medium text-warning">Generate Report</p>
+                        </button>
+
+                        <button class="p-4 border-2 border-dashed border-purple-500 rounded-lg hover:bg-purple-50 transition-colors text-center group" data-action="add-supplier" data-role-required="admin">
+                            <i class="fas fa-truck text-purple-500 text-2xl mb-3 group-hover:scale-110 transition-transform"></i>
+                            <p class="text-sm font-medium text-purple-500">Add Supplier</p>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Low Stock Alerts -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900">Low Stock Alerts</h3>
+                        <span class="px-3 py-1 bg-error text-white text-sm rounded-full">23 Items</span>
+                    </div>
+                    
+                    <div class="overflow-hidden">
+                        <table class="min-w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Warehouse</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Stock</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Min. Required</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <!-- @MAP: lowStockItems.map(item => ( -->
+                                <tr data-mock="true">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-laptop text-gray-600"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-900" data-bind="item.name">Dell Laptop XPS 13</div>
+                                                <div class="text-sm text-gray-500" data-bind="item.sku">SKU: DL-XPS13-001</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="item.category">Electronics</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="item.warehouse">Main Warehouse</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-medium bg-error text-white rounded-full" data-bind="item.currentStock">2</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="item.minRequired">10</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-primary hover:text-blue-700 mr-3" data-action="reorder">Reorder</button>
+                                        <button class="text-warning hover:text-orange-700" data-action="transfer">Transfer</button>
+                                    </td>
+                                </tr>
+
+                                <tr data-mock="true">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-print text-gray-600"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-900" data-bind="item.name">HP Printer Paper A4</div>
+                                                <div class="text-sm text-gray-500" data-bind="item.sku">SKU: HP-PPR-A4-001</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="item.category">Office Supplies</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="item.warehouse">Branch A</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-medium bg-warning text-white rounded-full" data-bind="item.currentStock">5</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="item.minRequired">20</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-primary hover:text-blue-700 mr-3" data-action="reorder">Reorder</button>
+                                        <button class="text-warning hover:text-orange-700" data-action="transfer">Transfer</button>
+                                    </td>
+                                </tr>
+                                <!-- @END_MAP )) -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+            <!-- @END_COMPONENT: Dashboard Content -->
+        </div>
+    </div>
+
+    <!-- @COMPONENT: Add Item Modal [transaction type selection, validation] -->
+    <div id="addItemModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold text-gray-900">Add New Item</h3>
+                    <button class="text-gray-400 hover:text-gray-600" data-action="close-modal">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <form class="p-6 space-y-6">
+                <!-- Transaction Type Selection -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Transaction Type</label>
+                    <div class="grid grid-cols-3 gap-4">
+                        <label class="relative cursor-pointer">
+                            <input type="radio" name="transactionType" value="incoming" class="sr-only" data-bind="transaction.type">
+                            <div class="border-2 border-gray-200 rounded-lg p-4 text-center hover:border-success transition-colors peer-checked:border-success peer-checked:bg-green-50">
+                                <i class="fas fa-arrow-down text-success text-2xl mb-2"></i>
+                                <p class="text-sm font-medium text-gray-900">Incoming</p>
+                                <p class="text-xs text-gray-500">From Supplier</p>
+                            </div>
+                        </label>
+                        
+                        <label class="relative cursor-pointer">
+                            <input type="radio" name="transactionType" value="outgoing" class="sr-only" data-bind="transaction.type">
+                            <div class="border-2 border-gray-200 rounded-lg p-4 text-center hover:border-error transition-colors peer-checked:border-error peer-checked:bg-red-50">
+                                <i class="fas fa-arrow-up text-error text-2xl mb-2"></i>
+                                <p class="text-sm font-medium text-gray-900">Outgoing</p>
+                                <p class="text-xs text-gray-500">Internal Use</p>
+                            </div>
+                        </label>
+                        
+                        <label class="relative cursor-pointer">
+                            <input type="radio" name="transactionType" value="transfer" class="sr-only" data-bind="transaction.type">
+                            <div class="border-2 border-gray-200 rounded-lg p-4 text-center hover:border-warning transition-colors peer-checked:border-warning peer-checked:bg-orange-50">
+                                <i class="fas fa-exchange-alt text-warning text-2xl mb-2"></i>
+                                <p class="text-sm font-medium text-gray-900">Transfer</p>
+                                <p class="text-xs text-gray-500">Between Warehouses</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Basic Item Information -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Item Name *</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Enter item name" data-bind="item.name">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">SKU *</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Auto-generated or custom" data-bind="item.sku">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" data-bind="item.category">
+                            <option value="">Select category</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="office-supplies">Office Supplies</option>
+                            <option value="furniture">Furniture</option>
+                            <option value="tools">Tools</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Quantity *</label>
+                        <input type="number" min="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Enter quantity" data-bind="item.quantity">
+                    </div>
+                </div>
+
+                <!-- Conditional Fields Based on Transaction Type -->
+                <!-- @FUNCTIONALITY: Show/hide fields based on transaction type selection -->
+                <div id="supplierSection" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Supplier *</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" data-bind="transaction.supplier">
+                        <option value="">Select supplier</option>
+                        <option value="supplier1">Tech Solutions Inc.</option>
+                        <option value="supplier2">Office Depot</option>
+                        <option value="supplier3">Industrial Supplies Co.</option>
+                    </select>
+                </div>
+
+                <div id="warehouseSection">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Source Warehouse</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" data-bind="transaction.sourceWarehouse">
+                                <option value="">Select warehouse</option>
+                                <option value="main">Main Warehouse</option>
+                                <option value="branch-a">Branch A</option>
+                                <option value="branch-b">Branch B</option>
+                            </select>
+                        </div>
+                        
+                        <div id="destinationSection" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Destination Warehouse *</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" data-bind="transaction.destinationWarehouse">
+                                <option value="">Select destination</option>
+                                <option value="main">Main Warehouse</option>
+                                <option value="branch-a">Branch A</option>
+                                <option value="branch-b">Branch B</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Date Selection -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Transaction Date *</label>
+                    <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" data-bind="transaction.date">
+                </div>
+
+                <!-- Image Upload -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Item Image</label>
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-sm text-gray-600 mb-2">Drag and drop an image, or click to browse</p>
+                        <input type="file" accept="image/*" class="hidden" data-implementation="Use FileUpload component here">
+                        <button type="button" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors">Browse Files</button>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Enter item description" data-bind="item.description"></textarea>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+                    <button type="button" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors" data-action="cancel">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors" data-event="click:handleSubmit" data-implementation="Should validate form before submission">
+                        Add Item
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: Add Item Modal -->
+
+    <!-- @COMPONENT: Transfer Modal [warehouse selection, quantity validation] -->
+    <div id="transferModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-lg w-full">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold text-gray-900">Transfer Items</h3>
+                    <button class="text-gray-400 hover:text-gray-600" data-action="close-modal">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <form class="p-6 space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Item *</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" data-bind="transfer.item">
+                        <option value="">Choose item to transfer</option>
+                        <option value="item1">Dell Laptop XPS 13 (Available: 15)</option>
+                        <option value="item2">Office Chair (Available: 8)</option>
+                        <option value="item3">Printer Paper A4 (Available: 25)</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">From Warehouse *</label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" data-bind="transfer.from">
+                            <option value="main">Main Warehouse</option>
+                            <option value="branch-a">Branch A</option>
+                            <option value="branch-b">Branch B</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">To Warehouse *</label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" data-bind="transfer.to">
+                            <option value="">Select destination</option>
+                            <option value="main">Main Warehouse</option>
+                            <option value="branch-a">Branch A</option>
+                            <option value="branch-b">Branch B</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Quantity *</label>
+                    <input type="number" min="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Enter quantity to transfer" data-bind="transfer.quantity">
+                    <p class="text-sm text-gray-500 mt-1">Available quantity will be shown based on selected warehouse</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Transfer Date *</label>
+                    <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" data-bind="transfer.date">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                    <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Optional transfer notes" data-bind="transfer.notes"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+                    <button type="button" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors" data-action="cancel">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-warning text-white rounded-lg hover:bg-orange-700 transition-colors" data-event="click:handleTransfer" data-implementation="Should validate transfer quantities and warehouse availability">
+                        Transfer Items
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: Transfer Modal -->
+
+    <!-- @STATE: sidebarOpen:boolean = false -->
+    <!-- @STATE: currentUser:object = {name, role, permissions} -->
+    <!-- @STATE: dashboardMetrics:object = {warehouses, categories, items, users, suppliers} -->
+    <!-- @STATE: recentActivities:array = [] -->
+    <!-- @STATE: lowStockItems:array = [] -->
+
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        (function() {
+            // Modal functionality
+            const addItemBtn = document.querySelector('[data-action="add-item"]');
+            const transferBtn = document.querySelector('[data-action="transfer-item"]');
+            const addItemModal = document.getElementById('addItemModal');
+            const transferModal = document.getElementById('transferModal');
+            const closeBtns = document.querySelectorAll('[data-action="close-modal"]');
+
+            // Show modals
+            if (addItemBtn) {
+                addItemBtn.addEventListener('click', () => {
+                    addItemModal.classList.remove('hidden');
+                });
+            }
+
+            if (transferBtn) {
+                transferBtn.addEventListener('click', () => {
+                    transferModal.classList.remove('hidden');
+                });
+            }
+
+            // Close modals
+            closeBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.target.closest('.fixed').classList.add('hidden');
+                });
+            });
+
+            // Close modal on backdrop click
+            [addItemModal, transferModal].forEach(modal => {
+                if (modal) {
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            modal.classList.add('hidden');
+                        }
+                    });
+                }
+            });
+
+            // Transaction type conditional form display
+            const transactionTypes = document.querySelectorAll('input[name="transactionType"]');
+            const supplierSection = document.getElementById('supplierSection');
+            const destinationSection = document.getElementById('destinationSection');
+
+            transactionTypes.forEach(type => {
+                type.addEventListener('change', (e) => {
+                    const value = e.target.value;
+                    
+                    // Reset visibility
+                    supplierSection.classList.add('hidden');
+                    destinationSection.classList.add('hidden');
+                    
+                    // Show relevant sections
+                    if (value === 'incoming') {
+                        supplierSection.classList.remove('hidden');
+                    } else if (value === 'transfer') {
+                        destinationSection.classList.remove('hidden');
+                    }
+                });
+            });
+
+            // Mobile sidebar toggle
+            const sidebarToggle = document.querySelector('.lg\\:hidden');
+            const sidebar = document.getElementById('sidebar');
+            
+            if (sidebarToggle && sidebar) {
+                sidebarToggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('-translate-x-full');
+                });
+            }
+
+            // Current date default for date inputs
+            const dateInputs = document.querySelectorAll('input[type="date"]');
+            const today = new Date().toISOString().split('T')[0];
+            dateInputs.forEach(input => {
+                if (!input.value) {
+                    input.value = today;
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

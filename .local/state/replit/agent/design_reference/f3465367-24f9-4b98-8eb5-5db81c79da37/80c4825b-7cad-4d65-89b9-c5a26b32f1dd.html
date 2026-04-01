@@ -1,0 +1,502 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITI Inventory Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1976D2',
+                        secondary: '#424242',
+                        success: '#4CAF50',
+                        warning: '#FF9800',
+                        error: '#F44336',
+                        surface: '#FFFFFF',
+                        background: '#F5F5F5'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-background font-inter">
+    <!-- @COMPONENT: Header Navigation -->
+    <header class="bg-surface shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">ITI Inventory</h1>
+                    </div>
+                    <nav class="hidden md:ml-8 md:flex md:space-x-8">
+                        <a href="#" class="text-primary border-b-2 border-primary px-1 pt-1 pb-4 text-sm font-medium">Dashboard</a>
+                        <a href="#" class="text-gray-500 hover:text-gray-700 px-1 pt-1 pb-4 text-sm font-medium">Inventory</a>
+                        <a href="#" class="text-gray-500 hover:text-gray-700 px-1 pt-1 pb-4 text-sm font-medium">Warehouses</a>
+                        <a href="#" class="text-gray-500 hover:text-gray-700 px-1 pt-1 pb-4 text-sm font-medium">Categories</a>
+                        <a href="#" class="text-gray-500 hover:text-gray-700 px-1 pt-1 pb-4 text-sm font-medium" data-role="admin">Users</a>
+                        <a href="#" class="text-gray-500 hover:text-gray-700 px-1 pt-1 pb-4 text-sm font-medium">Reports</a>
+                    </nav>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="text-gray-400 hover:text-gray-500">
+                        <i class="fas fa-bell text-lg"></i>
+                    </button>
+                    <div class="relative">
+                        <button class="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-gray-900">
+                            <div class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center">
+                                <span data-bind="user.initials">JD</span>
+                            </div>
+                            <span data-bind="user.name">John Doe</span>
+                            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full" data-bind="user.role">Admin</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header Navigation -->
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- @COMPONENT: Dashboard Header -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
+            <p class="text-gray-600 mt-1">Monitor your inventory management system performance</p>
+            
+            <!-- Date Range Selector -->
+            <div class="mt-4 flex flex-wrap items-center gap-4">
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-gray-700">Date Range:</label>
+                    <input type="date" class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="2024-01-01" data-mock="true">
+                    <span class="text-gray-500">to</span>
+                    <input type="date" class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="2024-12-31" data-mock="true">
+                </div>
+                <button class="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-filter mr-2"></i>Apply Filter
+                </button>
+                <button class="bg-success text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-600 transition-colors">
+                    <i class="fas fa-download mr-2"></i>Export Report
+                </button>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Dashboard Header -->
+
+        <!-- @COMPONENT: Metrics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Warehouses Card -->
+            <div class="bg-surface rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-warehouse text-primary text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total Warehouses</p>
+                        <p class="text-2xl font-bold text-gray-900" data-bind="metrics.warehouses">12</p>
+                        <p class="text-sm text-success"><i class="fas fa-arrow-up"></i> +2 this month</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Card -->
+            <div class="bg-surface rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-tags text-success text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total Categories</p>
+                        <p class="text-2xl font-bold text-gray-900" data-bind="metrics.categories">45</p>
+                        <p class="text-sm text-success"><i class="fas fa-arrow-up"></i> +5 this month</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Card -->
+            <div class="bg-surface rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-boxes text-warning text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total Items</p>
+                        <p class="text-2xl font-bold text-gray-900" data-bind="metrics.items">1,247</p>
+                        <p class="text-sm text-success"><i class="fas fa-arrow-up"></i> +127 this month</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Card -->
+            <div class="bg-surface rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow" data-role="admin">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-users text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total Users</p>
+                        <p class="text-2xl font-bold text-gray-900" data-bind="metrics.users">28</p>
+                        <p class="text-sm text-success"><i class="fas fa-arrow-up"></i> +3 this month</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Metrics Cards -->
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- @COMPONENT: Charts Section -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Inventory Trends Chart -->
+                <div class="bg-surface rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Inventory Trends</h3>
+                        <select class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option>Last 30 days</option>
+                            <option>Last 90 days</option>
+                            <option>Last year</option>
+                        </select>
+                    </div>
+                    <div class="h-64">
+                        <canvas id="inventoryChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Category Distribution -->
+                <div class="bg-surface rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Category Distribution</h3>
+                    <div class="h-64">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: Charts Section -->
+
+            <!-- @COMPONENT: Sidebar -->
+            <div class="space-y-6">
+                <!-- Quick Actions -->
+                <div class="bg-surface rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                    <div class="space-y-3">
+                        <button class="w-full bg-primary text-white px-4 py-3 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors flex items-center">
+                            <i class="fas fa-plus mr-2"></i>Add New Item
+                        </button>
+                        <button class="w-full bg-surface border border-gray-300 text-gray-700 px-4 py-3 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors flex items-center">
+                            <i class="fas fa-warehouse mr-2"></i>Manage Warehouses
+                        </button>
+                        <button class="w-full bg-surface border border-gray-300 text-gray-700 px-4 py-3 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors flex items-center" data-role="admin">
+                            <i class="fas fa-user-plus mr-2"></i>Add User
+                        </button>
+                        <button class="w-full bg-surface border border-gray-300 text-gray-700 px-4 py-3 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors flex items-center">
+                            <i class="fas fa-file-export mr-2"></i>Generate Report
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="bg-surface rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+                    <div class="space-y-4">
+                        <!-- @MAP: recentActivities.map(activity => ( -->
+                        <div class="flex items-start space-x-3" data-mock="true">
+                            <div class="w-8 h-8 bg-success rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-plus text-white text-xs"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm text-gray-900">New item added to Electronics</p>
+                                <p class="text-xs text-gray-500">Dec 15, 2024 at 2:30 PM</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3" data-mock="true">
+                            <div class="w-8 h-8 bg-warning rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-edit text-white text-xs"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm text-gray-900">Inventory updated for SKU-001</p>
+                                <p class="text-xs text-gray-500">Dec 15, 2024 at 1:15 PM</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3" data-mock="true">
+                            <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-warehouse text-white text-xs"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm text-gray-900">New warehouse added: West Coast</p>
+                                <p class="text-xs text-gray-500">Dec 14, 2024 at 4:45 PM</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3" data-mock="true" data-role="admin">
+                            <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-user text-white text-xs"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm text-gray-900">New user registered: Sarah Chen</p>
+                                <p class="text-xs text-gray-500">Dec 14, 2024 at 3:20 PM</p>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                    <button class="mt-4 text-primary text-sm font-medium hover:text-blue-700">View all activity</button>
+                </div>
+
+                <!-- Low Stock Alert -->
+                <div class="bg-surface rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Low Stock Alerts</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-red-50 border border-red-200 rounded-md" data-mock="true">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">iPhone 15 Pro</p>
+                                <p class="text-xs text-gray-500">Only 3 left in stock</p>
+                            </div>
+                            <span class="text-xs font-medium text-error">Critical</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-200 rounded-md" data-mock="true">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">MacBook Air M2</p>
+                                <p class="text-xs text-gray-500">8 left in stock</p>
+                            </div>
+                            <span class="text-xs font-medium text-warning">Low</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-200 rounded-md" data-mock="true">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">Samsung Galaxy Tab</p>
+                                <p class="text-xs text-gray-500">12 left in stock</p>
+                            </div>
+                            <span class="text-xs font-medium text-warning">Low</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: Sidebar -->
+        </div>
+
+        <!-- @COMPONENT: Recent Items Table -->
+        <div class="mt-8 bg-surface rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">Recent Items</h3>
+                    <div class="flex items-center space-x-2">
+                        <input type="text" placeholder="Search items..." class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <button class="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Warehouse</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Added</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <!-- @MAP: recentItems.map(item => ( -->
+                        <tr class="hover:bg-gray-50" data-mock="true">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center mr-3">
+                                        <i class="fas fa-mobile-alt text-gray-500"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900">iPhone 15 Pro Max</div>
+                                        <div class="text-sm text-gray-500">SKU: IP15PM-256-BLK</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Electronics</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Main Warehouse</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">45</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Dec 15, 2024</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 text-xs font-medium bg-success text-white rounded-full">In Stock</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button class="text-primary hover:text-blue-700 mr-3">Edit</button>
+                                <button class="text-error hover:text-red-700">Delete</button>
+                            </td>
+                        </tr>
+
+                        <tr class="hover:bg-gray-50" data-mock="true">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center mr-3">
+                                        <i class="fas fa-laptop text-gray-500"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900">MacBook Air M2</div>
+                                        <div class="text-sm text-gray-500">SKU: MBA-M2-512-SLV</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Computers</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">East Warehouse</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">8</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Dec 14, 2024</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 text-xs font-medium bg-warning text-white rounded-full">Low Stock</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button class="text-primary hover:text-blue-700 mr-3">Edit</button>
+                                <button class="text-error hover:text-red-700">Delete</button>
+                            </td>
+                        </tr>
+
+                        <tr class="hover:bg-gray-50" data-mock="true">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center mr-3">
+                                        <i class="fas fa-tablet-alt text-gray-500"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900">iPad Pro 12.9"</div>
+                                        <div class="text-sm text-gray-500">SKU: IPP-129-1TB-GRY</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Tablets</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Main Warehouse</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">23</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Dec 13, 2024</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 text-xs font-medium bg-success text-white rounded-full">In Stock</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button class="text-primary hover:text-blue-700 mr-3">Edit</button>
+                                <button class="text-error hover:text-red-700">Delete</button>
+                            </td>
+                        </tr>
+                        <!-- @END_MAP )) -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="px-6 py-4 border-t border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-gray-500">
+                        Showing 1-3 of 1,247 items
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Previous</button>
+                        <button class="px-3 py-1 bg-primary text-white rounded-md text-sm font-medium hover:bg-blue-700">1</button>
+                        <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">2</button>
+                        <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">3</button>
+                        <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Next</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Recent Items Table -->
+    </div>
+
+    <script>
+        // TODO: Implement business logic, API calls, or state management
+        (function() {
+            // Chart configurations with mock data
+            const inventoryCtx = document.getElementById('inventoryChart').getContext('2d');
+            const inventoryChart = new Chart(inventoryCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Items Added',
+                        data: [65, 59, 80, 81, 56, 55, 40, 89, 95, 102, 127, 140],
+                        borderColor: '#1976D2',
+                        backgroundColor: 'rgba(25, 118, 210, 0.1)',
+                        tension: 0.1
+                    }, {
+                        label: 'Items Removed',
+                        data: [28, 48, 40, 19, 86, 27, 90, 45, 32, 67, 89, 98],
+                        borderColor: '#FF9800',
+                        backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            const categoryChart = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Electronics', 'Computers', 'Tablets', 'Accessories', 'Audio', 'Other'],
+                    datasets: [{
+                        data: [350, 280, 150, 120, 80, 267],
+                        backgroundColor: [
+                            '#1976D2',
+                            '#4CAF50',
+                            '#FF9800',
+                            '#9C27B0',
+                            '#F44336',
+                            '#607D8B'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+
+            // Role-based visibility - hide admin-only elements for data entry users
+            // TODO: Implement proper role-based access control
+            const userRole = 'admin'; // This would come from authentication system
+            if (userRole !== 'admin') {
+                document.querySelectorAll('[data-role="admin"]').forEach(element => {
+                    element.style.display = 'none';
+                });
+            }
+
+            // Mock interactive functionality
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('button')) {
+                    const button = e.target.closest('button');
+                    if (button.textContent.includes('Export Report')) {
+                        // TODO: Implement report export functionality
+                        alert('Export functionality would be implemented here');
+                    }
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

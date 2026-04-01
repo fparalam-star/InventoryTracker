@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITI Inventory Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#EFF6FF',
+                            100: '#DBEAFE',
+                            500: '#3B82F6',
+                            600: '#2563EB',
+                            700: '#1D4ED8',
+                            900: '#1E3A8A'
+                        },
+                        success: {
+                            50: '#ECFDF5',
+                            100: '#D1FAE5',
+                            500: '#10B981',
+                            600: '#059669'
+                        },
+                        warning: {
+                            50: '#FFFBEB',
+                            100: '#FEF3C7',
+                            500: '#F59E0B',
+                            600: '#D97706'
+                        },
+                        error: {
+                            50: '#FEF2F2',
+                            100: '#FEE2E2',
+                            500: '#EF4444',
+                            600: '#DC2626'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 font-inter">
+    <!-- @COMPONENT: Layout Wrapper -->
+    <div class="min-h-screen flex">
+        <!-- @COMPONENT: Sidebar Navigation -->
+        <aside class="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-white shadow-sm border-r border-gray-200">
+            <div class="flex items-center justify-center h-16 px-4 border-b border-gray-200">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-boxes text-white text-sm"></i>
+                    </div>
+                    <span class="text-xl font-semibold text-gray-900">ITI Inventory</span>
+                </div>
+            </div>
+            
+            <!-- @STATE: userRole:string = 'admin' | 'data_entry' -->
+            <nav class="flex-1 px-4 py-4 space-y-2">
+                <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-primary-700 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors">
+                    <i class="fas fa-tachometer-alt mr-3 text-primary-600"></i>
+                    Dashboard
+                </a>
+                
+                <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                    <i class="fas fa-warehouse mr-3 text-gray-500"></i>
+                    Warehouses
+                </a>
+                
+                <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                    <i class="fas fa-tags mr-3 text-gray-500"></i>
+                    Categories
+                </a>
+                
+                <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                    <i class="fas fa-box mr-3 text-gray-500"></i>
+                    Items
+                </a>
+                
+                <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                    <i class="fas fa-chart-line mr-3 text-gray-500"></i>
+                    Reports
+                </a>
+                
+                <!-- @CONDITIONAL: Only show for admin role -->
+                <div data-role="admin" class="pt-4 border-t border-gray-200">
+                    <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Administration</p>
+                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                        <i class="fas fa-users mr-3 text-gray-500"></i>
+                        User Management
+                    </a>
+                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                        <i class="fas fa-cogs mr-3 text-gray-500"></i>
+                        System Settings
+                    </a>
+                </div>
+            </nav>
+            
+            <!-- User Profile Section -->
+            <div class="p-4 border-t border-gray-200">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white text-sm"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-900" data-bind="user.name">John Smith</p>
+                        <p class="text-xs text-gray-500" data-bind="user.role">Administrator</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <!-- @END_COMPONENT: Sidebar Navigation -->
+
+        <!-- @COMPONENT: Main Content -->
+        <div class="flex-1 lg:pl-64">
+            <!-- @COMPONENT: Top Navigation Bar -->
+            <header class="bg-white shadow-sm border-b border-gray-200">
+                <div class="px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between items-center h-16">
+                        <!-- Mobile menu button -->
+                        <button class="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                        
+                        <div class="flex-1 flex justify-between items-center lg:ml-0">
+                            <div>
+                                <h1 class="text-2xl font-semibold text-gray-900">Dashboard</h1>
+                                <p class="text-sm text-gray-600">Welcome back, manage your inventory efficiently</p>
+                            </div>
+                            
+                            <div class="flex items-center space-x-4">
+                                <!-- Search -->
+                                <div class="relative hidden md:block">
+                                    <input type="text" placeholder="Search..." class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                                
+                                <!-- Notifications -->
+                                <button class="relative p-2 text-gray-400 hover:text-gray-500">
+                                    <i class="far fa-bell text-xl"></i>
+                                    <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-error-500 transform translate-x-1/2 -translate-y-1/2"></span>
+                                </button>
+                                
+                                <!-- Export Button -->
+                                <button class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                                    <i class="fas fa-download mr-2"></i>
+                                    Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <!-- @END_COMPONENT: Top Navigation Bar -->
+
+            <!-- @COMPONENT: Dashboard Content -->
+            <main class="px-4 sm:px-6 lg:px-8 py-8">
+                <!-- @COMPONENT: Key Metrics Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Warehouses Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Total Warehouses</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-1" data-bind="metrics.warehouses">12</p>
+                                <p class="text-sm text-success-600 mt-1">
+                                    <i class="fas fa-arrow-up mr-1"></i>
+                                    +2 this month
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-warehouse text-primary-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Categories Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Total Categories</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-1" data-bind="metrics.categories">48</p>
+                                <p class="text-sm text-success-600 mt-1">
+                                    <i class="fas fa-arrow-up mr-1"></i>
+                                    +5 this week
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 bg-warning-50 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-tags text-warning-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Items Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Total Items</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-1" data-bind="metrics.items">1,847</p>
+                                <p class="text-sm text-success-600 mt-1">
+                                    <i class="fas fa-arrow-up mr-1"></i>
+                                    +124 this week
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 bg-success-50 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-box text-success-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Users Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Total Users</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-1" data-bind="metrics.users">24</p>
+                                <p class="text-sm text-gray-500 mt-1">
+                                    8 Admin, 16 Data Entry
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-users text-purple-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: Key Metrics Cards -->
+
+                <!-- @COMPONENT: Charts and Analytics Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- Inventory Trends Chart -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900">Inventory Trends</h3>
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-1 text-xs font-medium text-primary-700 bg-primary-50 rounded-full">7D</button>
+                                <button class="px-3 py-1 text-xs font-medium text-gray-500 hover:text-gray-700">30D</button>
+                                <button class="px-3 py-1 text-xs font-medium text-gray-500 hover:text-gray-700">90D</button>
+                            </div>
+                        </div>
+                        <div class="h-64">
+                            <canvas id="inventoryChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Top Categories -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-6">Top Categories</h3>
+                        <div class="space-y-4">
+                            <!-- @MAP: topCategories.map(category => ( -->
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-laptop text-primary-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-900" data-bind="category.name">Electronics</p>
+                                        <p class="text-sm text-gray-600" data-bind="category.count">234 items</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-medium text-gray-900">68%</p>
+                                    <div class="w-16 h-2 bg-gray-200 rounded-full mt-1">
+                                        <div class="w-11 h-2 bg-primary-500 rounded-full"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-success-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-tshirt text-success-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-900">Fashion</p>
+                                        <p class="text-sm text-gray-600">187 items</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-medium text-gray-900">52%</p>
+                                    <div class="w-16 h-2 bg-gray-200 rounded-full mt-1">
+                                        <div class="w-8 h-2 bg-success-500 rounded-full"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-warning-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-home text-warning-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-900">Home & Garden</p>
+                                        <p class="text-sm text-gray-600">156 items</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-medium text-gray-900">43%</p>
+                                    <div class="w-16 h-2 bg-gray-200 rounded-full mt-1">
+                                        <div class="w-7 h-2 bg-warning-500 rounded-full"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: Charts and Analytics Section -->
+
+                <!-- @COMPONENT: Recent Activity and Quick Actions -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Recent Activity -->
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
+                            <button class="text-sm text-primary-600 hover:text-primary-700 font-medium">View All</button>
+                        </div>
+                        <div class="space-y-4">
+                            <!-- @MAP: recentActivities.map(activity => ( -->
+                            <div class="flex items-center space-x-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                                <div class="w-10 h-10 bg-success-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-plus text-success-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">New item added to Electronics</p>
+                                    <p class="text-xs text-gray-500">MacBook Pro 16" added by John Smith</p>
+                                </div>
+                                <div class="text-xs text-gray-500">2 min ago</div>
+                            </div>
+
+                            <div class="flex items-center space-x-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                                <div class="w-10 h-10 bg-warning-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-edit text-warning-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">Item updated in Fashion</p>
+                                    <p class="text-xs text-gray-500">Nike Air Max stock updated by Sarah Johnson</p>
+                                </div>
+                                <div class="text-xs text-gray-500">15 min ago</div>
+                            </div>
+
+                            <div class="flex items-center space-x-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                                <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-warehouse text-primary-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">New warehouse registered</p>
+                                    <p class="text-xs text-gray-500">Downtown Storage Facility added</p>
+                                </div>
+                                <div class="text-xs text-gray-500">1 hour ago</div>
+                            </div>
+
+                            <div class="flex items-center space-x-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                                <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user-plus text-purple-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">New user added</p>
+                                    <p class="text-xs text-gray-500">Mike Chen assigned as Data Entry user</p>
+                                </div>
+                                <div class="text-xs text-gray-500">3 hours ago</div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-6">Quick Actions</h3>
+                        <div class="space-y-3">
+                            <button class="w-full flex items-center justify-center px-4 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+                                <i class="fas fa-plus mr-2"></i>
+                                Add New Item
+                            </button>
+                            
+                            <button class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-warehouse mr-2"></i>
+                                Add Warehouse
+                            </button>
+                            
+                            <button class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-tags mr-2"></i>
+                                Create Category
+                            </button>
+                            
+                            <!-- @CONDITIONAL: Only show for admin role -->
+                            <button data-role="admin" class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-user-plus mr-2"></i>
+                                Add User
+                            </button>
+                        </div>
+
+                        <!-- File Upload Component -->
+                        <div class="mt-6 pt-6 border-t border-gray-200">
+                            <h4 class="text-sm font-medium text-gray-900 mb-3">Upload Item Images</h4>
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-primary-400 transition-colors cursor-pointer">
+                                <i class="fas fa-cloud-upload-alt text-gray-400 text-2xl mb-2"></i>
+                                <p class="text-sm text-gray-600">Click to upload or drag and drop</p>
+                                <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 5MB</p>
+                                <input type="file" class="hidden" accept="image/*" multiple data-implementation="Use FileUpload component here">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: Recent Activity and Quick Actions -->
+            </main>
+            <!-- @END_COMPONENT: Dashboard Content -->
+        </div>
+        <!-- @END_COMPONENT: Main Content -->
+    </div>
+    <!-- @END_COMPONENT: Layout Wrapper -->
+
+    <!-- @COMPONENT: Export Modal (Hidden by default) -->
+    <div id="exportModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Export Report</h3>
+                <button class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Report Type</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                        <option>Inventory Summary</option>
+                        <option>Warehouse Report</option>
+                        <option>Category Analysis</option>
+                        <option>User Activity</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Format</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="format" value="pdf" class="mr-2">
+                            <span class="text-sm">PDF</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="format" value="excel" class="mr-2">
+                            <span class="text-sm">Excel</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="flex space-x-3 pt-4">
+                    <button class="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+                        Export
+                    </button>
+                    <button class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: Export Modal -->
+
+    <script>
+        // Chart.js initialization
+        (function() {
+            const ctx = document.getElementById('inventoryChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Items Added',
+                        data: [120, 150, 180, 200, 165, 210],
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Items Removed',
+                        data: [80, 95, 110, 125, 105, 140],
+                        borderColor: '#EF4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        })();
+
+        // TODO: Implement role-based access control
+        // TODO: Implement export functionality
+        // TODO: Implement file upload handling
+        // TODO: Implement real-time data updates
+        // TODO: Implement search functionality
+        // TODO: Implement notification system
+    </script>
+</body>
+</html>

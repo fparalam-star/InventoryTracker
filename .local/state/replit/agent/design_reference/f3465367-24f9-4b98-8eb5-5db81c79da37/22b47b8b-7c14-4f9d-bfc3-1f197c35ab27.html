@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITI Inventory Management Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            500: '#2563eb',
+                            600: '#1d4ed8',
+                            700: '#1e40af',
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-gray-50 font-inter">
+    <!-- @COMPONENT: AppLayout -->
+    <div class="min-h-screen flex">
+        <!-- @COMPONENT: Sidebar -->
+        <aside class="hidden lg:flex lg:flex-shrink-0">
+            <div class="flex flex-col w-64 bg-white border-r border-gray-200">
+                <!-- Logo Section -->
+                <div class="flex items-center justify-center h-16 px-4 bg-primary-600">
+                    <div class="flex items-center">
+                        <i class="fas fa-boxes text-white text-2xl mr-3"></i>
+                        <span class="text-xl font-bold text-white">ITI Inventory</span>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="flex-1 px-4 py-6 space-y-2">
+                    <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-white bg-primary-600 rounded-lg" data-event="click:navigateToDashboard">
+                        <i class="fas fa-tachometer-alt mr-3"></i>
+                        Dashboard
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" data-event="click:navigateToWarehouses">
+                        <i class="fas fa-warehouse mr-3"></i>
+                        Warehouses
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" data-event="click:navigateToCategories">
+                        <i class="fas fa-tags mr-3"></i>
+                        Categories
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" data-event="click:navigateToItems">
+                        <i class="fas fa-cube mr-3"></i>
+                        Items
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" data-event="click:navigateToUsers">
+                        <i class="fas fa-users mr-3"></i>
+                        Users
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" data-event="click:navigateToReports">
+                        <i class="fas fa-chart-bar mr-3"></i>
+                        Reports
+                    </a>
+                </nav>
+                
+                <!-- User Profile -->
+                <div class="p-4 border-t border-gray-200">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-white text-sm"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-700" data-bind="user.name">Admin User</p>
+                            <p class="text-xs text-gray-500" data-bind="user.role">Administrator</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- @COMPONENT: MainContent -->
+        <div class="flex-1 overflow-hidden">
+            <!-- @COMPONENT: TopHeader -->
+            <header class="bg-white shadow-sm border-b border-gray-200">
+                <div class="flex items-center justify-between px-6 py-4">
+                    <div class="flex items-center">
+                        <button class="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100" data-event="click:toggleMobileMenu">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                        <h1 class="ml-4 lg:ml-0 text-2xl font-bold text-gray-900">Dashboard</h1>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <div class="relative">
+                            <button class="p-2 text-gray-400 hover:text-gray-500 rounded-full hover:bg-gray-100" data-event="click:showNotifications">
+                                <i class="fas fa-bell text-xl"></i>
+                                <span class="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">3</span>
+                            </button>
+                        </div>
+                        <div class="hidden sm:block text-sm text-gray-500" data-bind="currentDate">
+                            <i class="fas fa-calendar-alt mr-2"></i>
+                            December 15, 2024
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <!-- @END_COMPONENT: TopHeader -->
+
+            <!-- @COMPONENT: DashboardContent -->
+            <main class="flex-1 overflow-y-auto p-6">
+                <!-- Welcome Section -->
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2">Welcome back!</h2>
+                    <p class="text-gray-600">Here's what's happening with your inventory today.</p>
+                </div>
+
+                <!-- @COMPONENT: MetricCards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Warehouses Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow" data-mock="true">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 mb-1">Total Warehouses</p>
+                                <p class="text-3xl font-bold text-gray-900" data-bind="metrics.warehouses">12</p>
+                                <div class="flex items-center mt-2">
+                                    <i class="fas fa-arrow-up text-green-500 text-sm mr-1"></i>
+                                    <span class="text-sm text-green-600 font-medium">+2 this month</span>
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-warehouse text-blue-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Categories Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow" data-mock="true">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 mb-1">Total Categories</p>
+                                <p class="text-3xl font-bold text-gray-900" data-bind="metrics.categories">48</p>
+                                <div class="flex items-center mt-2">
+                                    <i class="fas fa-arrow-up text-green-500 text-sm mr-1"></i>
+                                    <span class="text-sm text-green-600 font-medium">+5 this week</span>
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-tags text-purple-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Items Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow" data-mock="true">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 mb-1">Total Items</p>
+                                <p class="text-3xl font-bold text-gray-900" data-bind="metrics.items">2,847</p>
+                                <div class="flex items-center mt-2">
+                                    <i class="fas fa-arrow-down text-red-500 text-sm mr-1"></i>
+                                    <span class="text-sm text-red-600 font-medium">-23 today</span>
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-cube text-green-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Users Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow" data-mock="true">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 mb-1">Total Users</p>
+                                <p class="text-3xl font-bold text-gray-900" data-bind="metrics.users">156</p>
+                                <div class="flex items-center mt-2">
+                                    <i class="fas fa-arrow-up text-green-500 text-sm mr-1"></i>
+                                    <span class="text-sm text-green-600 font-medium">+8 this month</span>
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-orange-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: MetricCards -->
+
+                <!-- @COMPONENT: ChartsSection -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- Inventory Trends Chart -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900">Inventory Trends</h3>
+                            <select class="text-sm border border-gray-300 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500" data-event="change:updateTrendsPeriod">
+                                <option>Last 7 days</option>
+                                <option>Last 30 days</option>
+                                <option>Last 3 months</option>
+                            </select>
+                        </div>
+                        <div class="h-64">
+                            <canvas id="trendsChart" class="w-full h-full"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Category Distribution Chart -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900">Category Distribution</h3>
+                            <button class="text-sm text-primary-600 hover:text-primary-700 font-medium" data-event="click:viewAllCategories">
+                                View All
+                            </button>
+                        </div>
+                        <div class="h-64">
+                            <canvas id="categoryChart" class="w-full h-full"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: ChartsSection -->
+
+                <!-- @COMPONENT: RecentActivity -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Recent Activities -->
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900">Recent Activities</h3>
+                            <button class="text-sm text-primary-600 hover:text-primary-700 font-medium" data-event="click:viewAllActivities">
+                                View All
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4" data-mock="true">
+                            <!-- @MAP: activities.map(activity => ( -->
+                            <div class="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-plus text-blue-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-gray-900">
+                                        <span class="font-medium" data-bind="activity.user">John Smith</span> added 
+                                        <span class="font-medium" data-bind="activity.item">50 units of Laptop Batteries</span> 
+                                        to <span class="font-medium" data-bind="activity.warehouse">Warehouse A</span>
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1" data-bind="activity.time">2 minutes ago</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                                <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-minus text-red-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-gray-900">
+                                        <span class="font-medium" data-bind="activity.user">Sarah Johnson</span> removed 
+                                        <span class="font-medium" data-bind="activity.item">25 units of USB Cables</span> 
+                                        from <span class="font-medium" data-bind="activity.warehouse">Warehouse B</span>
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1" data-bind="activity.time">15 minutes ago</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-sync text-green-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-gray-900">
+                                        <span class="font-medium" data-bind="activity.user">Mike Davis</span> updated 
+                                        <span class="font-medium" data-bind="activity.item">Wireless Headphones</span> 
+                                        category
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1" data-bind="activity.time">1 hour ago</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                                <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-exclamation-triangle text-yellow-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-gray-900">
+                                        Low stock alert for <span class="font-medium" data-bind="activity.item">Keyboard Switches</span> 
+                                        in <span class="font-medium" data-bind="activity.warehouse">Warehouse C</span>
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1" data-bind="activity.time">2 hours ago</p>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-6">Quick Actions</h3>
+                        
+                        <div class="space-y-3">
+                            <button class="w-full flex items-center justify-center px-4 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors" data-event="click:addNewItem">
+                                <i class="fas fa-plus mr-2"></i>
+                                Add New Item
+                            </button>
+                            
+                            <button class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors" data-event="click:createWarehouse">
+                                <i class="fas fa-warehouse mr-2"></i>
+                                Create Warehouse
+                            </button>
+                            
+                            <button class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors" data-event="click:generateReport">
+                                <i class="fas fa-file-alt mr-2"></i>
+                                Generate Report
+                            </button>
+                            
+                            <button class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors" data-event="click:manageUsers">
+                                <i class="fas fa-user-plus mr-2"></i>
+                                Manage Users
+                            </button>
+                        </div>
+
+                        <!-- Low Stock Alerts -->
+                        <div class="mt-8">
+                            <h4 class="text-sm font-semibold text-gray-900 mb-4">Low Stock Alerts</h4>
+                            <div class="space-y-3" data-mock="true">
+                                <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
+                                    <div>
+                                        <p class="text-sm font-medium text-red-900" data-bind="alert.item">USB Cables</p>
+                                        <p class="text-xs text-red-600" data-bind="alert.stock">Only 5 left</p>
+                                    </div>
+                                    <button class="text-red-600 hover:text-red-700" data-event="click:reorderItem">
+                                        <i class="fas fa-shopping-cart text-sm"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                                    <div>
+                                        <p class="text-sm font-medium text-yellow-900" data-bind="alert.item">Laptop Chargers</p>
+                                        <p class="text-xs text-yellow-600" data-bind="alert.stock">12 remaining</p>
+                                    </div>
+                                    <button class="text-yellow-600 hover:text-yellow-700" data-event="click:reorderItem">
+                                        <i class="fas fa-shopping-cart text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: RecentActivity -->
+            </main>
+            <!-- @END_COMPONENT: DashboardContent -->
+        </div>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+    <!-- @END_COMPONENT: AppLayout -->
+
+    <!-- Mobile Menu Overlay (hidden by default) -->
+    <div id="mobileMenuOverlay" class="fixed inset-0 z-50 lg:hidden hidden">
+        <div class="fixed inset-0 bg-gray-600 bg-opacity-75" data-event="click:closeMobileMenu"></div>
+        <div class="fixed inset-y-0 left-0 flex flex-col w-64 bg-white">
+            <!-- Mobile menu content would go here -->
+            <!-- Same as sidebar but adapted for mobile -->
+        </div>
+    </div>
+
+    <script>
+        // TODO: Implement proper React state management, API calls, and data fetching
+        
+        (function() {
+            // Initialize Charts
+            function initializeCharts() {
+                // Trends Chart
+                const trendsCtx = document.getElementById('trendsChart');
+                if (trendsCtx) {
+                    new Chart(trendsCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                            datasets: [{
+                                label: 'Items Added',
+                                data: [65, 85, 80, 95, 70, 85, 90],
+                                borderColor: '#2563eb',
+                                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }, {
+                                label: 'Items Removed',
+                                data: [45, 55, 60, 70, 55, 65, 70],
+                                borderColor: '#dc2626',
+                                backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Category Distribution Chart
+                const categoryCtx = document.getElementById('categoryChart');
+                if (categoryCtx) {
+                    new Chart(categoryCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Electronics', 'Office Supplies', 'Hardware', 'Software', 'Others'],
+                            datasets: [{
+                                data: [35, 25, 20, 15, 5],
+                                backgroundColor: [
+                                    '#2563eb',
+                                    '#7c3aed',
+                                    '#059669',
+                                    '#d97706',
+                                    '#dc2626'
+                                ],
+                                borderWidth: 2,
+                                borderColor: '#ffffff'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            // Basic mobile menu toggle functionality
+            function setupMobileMenu() {
+                const mobileMenuButton = document.querySelector('[data-event="click:toggleMobileMenu"]');
+                const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+                const closeButton = document.querySelector('[data-event="click:closeMobileMenu"]');
+
+                if (mobileMenuButton && mobileMenuOverlay) {
+                    mobileMenuButton.addEventListener('click', function() {
+                        mobileMenuOverlay.classList.toggle('hidden');
+                    });
+                }
+
+                if (closeButton && mobileMenuOverlay) {
+                    closeButton.addEventListener('click', function() {
+                        mobileMenuOverlay.classList.add('hidden');
+                    });
+                }
+            }
+
+            // Initialize when DOM is loaded
+            document.addEventListener('DOMContentLoaded', function() {
+                initializeCharts();
+                setupMobileMenu();
+            });
+        })();
+    </script>
+</body>
+</html>
