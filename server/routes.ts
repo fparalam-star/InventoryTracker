@@ -271,6 +271,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/suppliers/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteSupplier(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Supplier not found" });
+      }
+      res.json({ message: "Supplier deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete supplier" });
+    }
+  });
+
   // Item routes
   app.get("/api/items", async (req, res) => {
     try {
