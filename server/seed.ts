@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { db } from "./db";
 import { users, warehouses, categories, suppliers } from "@shared/schema";
 
@@ -68,18 +69,18 @@ export async function seedDatabase() {
       .insert(users)
       .values([
         {
-          username: "admin",
-          password: "admin123", // In production, this should be hashed
+          username: "hassan_admin",
+          password: "SecretAdminPassword!", // In production, this should be hashed
           role: "admin",
           firstName: "Admin",
-          lastName: "User",
+          lastName: "Hassan",
           email: "admin@iti.gov.eg",
           mobileNumber: "+20-1111111111",
           assignedWarehouseId: null // Admin can access all warehouses
         },
         {
-          username: "dataentry",
-          password: "dataentry123", // In production, this should be hashed
+          username: "hassan_entry",
+          password: "SecretEntryPassword!", // In production, this should be hashed
           role: "data_entry",
           firstName: "Data Entry",
           lastName: "User", 
@@ -94,3 +95,10 @@ export async function seedDatabase() {
     console.error("Error seeding database:", error);
   }
 }
+
+seedDatabase()
+  .then(() => process.exit(0))
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });

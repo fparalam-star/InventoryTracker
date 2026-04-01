@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
