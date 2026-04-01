@@ -1,6 +1,7 @@
 // @ts-nocheck
+// Vercel API handler source - bundled by esbuild into api/index.mjs
 import express from "express";
-import { registerRoutes } from "../server/routes";
+import { registerRoutes } from "./routes.js";
 
 const app = express();
 app.use(express.json());
@@ -15,4 +16,3 @@ export default async function handler(req: any, res: any) {
   }
   return app(req, res);
 }
-// @ts-nocheck

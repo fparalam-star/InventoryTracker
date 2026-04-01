@@ -12,8 +12,8 @@ import {
   type TransactionWithDetails,
   type InventoryWithDetails,
   type DashboardMetrics
-} from "@shared/schema";
-import { db } from "./db";
+} from "../shared/schema.js";
+import { db } from "./db.js";
 import { eq, and, sql, desc, gte, lte } from "drizzle-orm";
 
 export interface IStorage {
