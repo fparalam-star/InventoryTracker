@@ -182,10 +182,10 @@ export function TransactionModal({ open, onOpenChange }: TransactionModalProps) 
 
       form.reset();
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "خطأ",
-        description: "فشل في إنشاء المعاملة",
+        description: error.message || "فشل في إنشاء المعاملة",
         variant: "destructive",
       });
     }

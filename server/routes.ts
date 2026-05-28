@@ -383,11 +383,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/transactions", async (req, res) => {
     try {
       const transactionData = insertTransactionSchema.parse(req.body);
+
+      // Validate inventory for outgoing and transfer transactions
+      if (transactionData.type === "outgoing" || transactionData.type === "transfer") {
+        if (!transactionData.sourceWarehouseId) {
+          return res.status(400).json({ message: "Source warehouse is required for this transaction type" });
+        }
+
+        const inventory = await storage.getInventoryByItem(transactionData.itemId);
+        const sourceInventory = inventory.find(inv => inv.warehouseId === transactionData.sourceWarehouseId);
+
+        const availableQuantity = sourceInventory ? sourceInventory.quantity : 0;
+
+        if (transactionData.quantity > availableQuantity) {
+          return res.status(400).json({ message: `Insufficient stock. Available: ${availableQuantity}` });
+        }
+      }
+
       const transaction = await storage.createTransaction(transactionData);
       res.status(201).json(transaction);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating transaction:", error);
-      res.status(400).json({ message: "Invalid transaction data" });
+      res.status(400).json({ message: error.message || "Invalid transaction data" });
     }
   });
 

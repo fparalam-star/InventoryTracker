@@ -134,10 +134,10 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
 
       form.reset();
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "خطأ",
-        description: "فشل في نقل العناصر",
+        description: error.message || "فشل في نقل العناصر",
         variant: "destructive",
       });
     }
